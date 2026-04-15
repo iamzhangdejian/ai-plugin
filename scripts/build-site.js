@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -27,12 +27,7 @@ content = content.replace(
   ''
 );
 
-// 添加 Three.js CDN 引用（使用与项目匹配的版本）
-content = content.replace(
-  '</head>',
-  `<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.162.0/three.min.js"></script>
-</head>`
-);
+// Three.js 已经打包进库文件，不需要额外 CDN
 
 // 写入新的 index.html
 writeFileSync(DEST_INDEX, content, 'utf-8');
@@ -40,6 +35,6 @@ writeFileSync(DEST_INDEX, content, 'utf-8');
 console.log('✅ Build complete!');
 console.log('📦 Output directory: dist/');
 console.log('📄 Files:');
-console.log('   - ai-robot.js (library)');
+console.log('   - ai-robot.js (library with Three.js bundled)');
 console.log('   - ai-robot.js.map (source map)');
 console.log('   - index.html (demo site)');

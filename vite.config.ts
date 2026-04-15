@@ -15,7 +15,6 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     rollupOptions: {
-      external: ['three'],
       output: {
         exports: 'named',
         assetFileNames: (assetInfo) => {
