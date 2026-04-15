@@ -1,23 +1,22 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'AIRobot',
-      fileName: (format) => `ai-robot.${format === 'es' ? 'js' : 'umd.cjs'}`,
+      fileName: () => 'ai-robot.js',
     },
     outDir: 'dist',
     sourcemap: true,
-    minify: 'esbuild',
+    minify: false,
     rollupOptions: {
       external: ['three'],
       output: {
-        globals: {
-          three: 'THREE',
-        },
         exports: 'named',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'style.css') {

@@ -125,8 +125,30 @@ npm run dev
 npm run build
 
 # 类型检查
-npm run type-check
+npm run typecheck
 ```
+
+## 📦 部署
+
+### 本地构建
+
+```bash
+npm run build
+```
+
+构建输出到 `dist/` 目录，包含：
+- `ai-robot.js` - 库文件
+- `index.html` - Demo 站点
+
+### Cloudflare Pages 部署
+
+详见 [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+快速开始：
+1. 在 Cloudflare Dashboard 创建 Pages 项目
+2. 连接 GitHub 仓库
+3. 配置构建命令：`npm install && npm run build`
+4. 配置输出目录：`dist`
 
 ## 📄 许可证
 
