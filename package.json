@@ -1,0 +1,54 @@
+{
+  "name": "ai-robot-assistant",
+  "version": "1.0.0",
+  "description": "A cute 3D AI robot assistant browser plugin with voice interaction",
+  "type": "module",
+  "main": "dist/ai-robot.js",
+  "module": "dist/ai-robot.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/ai-robot.js",
+      "require": "./dist/ai-robot.umd.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:watch": "tsc && vite build --watch",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "robot",
+    "assistant",
+    "web-component",
+    "threejs",
+    "voice"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.162.0",
+    "marked": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.162.0",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6",
+    "vite-plugin-dts": "^3.7.4"
+  },
+  "peerDependencies": {
+    "three": ">=0.160.0"
+  }
+}
