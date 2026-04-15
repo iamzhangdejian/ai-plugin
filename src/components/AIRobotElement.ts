@@ -11,7 +11,7 @@ import type { AIRobotConfig, Message, RobotState } from '../types';
 import type { RobotTheme } from '../types';
 import { createElement } from '../utils/dom';
 import type { AIRobotAPI } from '../types/api';
-import { loadLocaleFromStorage, onLocaleChange } from '../i18n';
+import { loadLocaleFromStorage, onLocaleChange, t } from '../i18n';
 
 export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private shadow!: ShadowRoot;
@@ -247,15 +247,15 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
       }
     }
 
+    // 加载语言偏好
+    loadLocaleFromStorage();
+
     const chatContainer = (this as unknown as Record<string, unknown>).chatContainer as HTMLElement;
     this.chatPanel = new ChatPanel(chatContainer, {
       theme: this.config.theme as 'blue' | 'green' | 'purple' | undefined,
-      title: 'AI 助手',
+      title: t('robot.title'),
       bubbleMode: true,
     });
-
-    // 加载语言偏好
-    loadLocaleFromStorage();
 
     // 监听语言变化（通过 i18n 模块）
     onLocaleChange((locale) => {

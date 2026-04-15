@@ -1243,8 +1243,8 @@ export class ChatPanel {
    * 更新语言
    */
   updateLocale(locale: 'zh' | 'en'): void {
-    // 更新标题
-    const titleEl = this.shadow.querySelector('.chat-title span');
+    // 更新标题（选择第二个 span，第一个是图标）
+    const titleEl = this.shadow.querySelector('.chat-title span:last-child');
     if (titleEl) {
       titleEl.textContent = locale === 'zh' ? 'AI 助手' : 'AI Assistant';
     }
