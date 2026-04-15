@@ -88,7 +88,7 @@
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
 
     /* GitHub 图标 */
@@ -110,35 +110,40 @@
       transform: scale(1.08);
     }
 
-    /* 语言切换按钮 - 与 GitHub 图标风格一致 */
+    /* 语言切换按钮 */
     .nav-language-btn {
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      padding: 0;
-      background: transparent;
-      border: none;
-      border-radius: 10px;
+      gap: 6px;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
       color: rgba(255, 255, 255, 0.9);
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
     .nav-language-btn:hover {
-      color: white;
       background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.08);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     .nav-language-icon {
-      width: 22px;
-      height: 22px;
+      width: 16px;
+      height: 16px;
     }
 
     .nav-language-arrow {
-      display: none;
+      width: 12px;
+      height: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-language.open .nav-language-arrow {
+      transform: rotate(180deg);
     }
 
     /* 语言切换容器 */
@@ -853,6 +858,16 @@
         <li><a href="#api" data-i18n="nav.api">API 文档</a></li>
       </ul>
       <div class="nav-actions">
+        <!-- GitHub 图标 -->
+        <a href="https://github.com/iamzhangdejian/ai-plugin" target="_blank" rel="noopener" class="nav-github" aria-label="GitHub Repository">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+        <button class="mock-indicator" id="mockIndicator" onclick="toggleApiConfig()">
+          <span class="mock-dot"></span>
+          <span data-i18n="nav.mock">Mock 模式</span>
+        </button>
         <!-- 语言切换 -->
         <div class="nav-language" id="navLanguage">
           <button class="nav-language-btn" onclick="toggleLanguageDropdown()" aria-label="Switch Language">
@@ -860,6 +875,10 @@
               <circle cx="12" cy="12" r="10"/>
               <line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="nav-language-text">中文</span>
+            <svg class="nav-language-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
           <div class="nav-language-dropdown">
@@ -873,16 +892,6 @@
             </div>
           </div>
         </div>
-        <!-- GitHub 图标 -->
-        <a href="https://github.com/iamzhangdejian/ai-plugin" target="_blank" rel="noopener" class="nav-github" aria-label="GitHub Repository">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-        </a>
-        <button class="mock-indicator" id="mockIndicator" onclick="toggleApiConfig()">
-          <span class="mock-dot"></span>
-          <span data-i18n="nav.mock">Mock 模式</span>
-        </button>
       </div>
     </div>
   </nav>
@@ -1490,6 +1499,12 @@
 
       // 关闭下拉菜单
       document.getElementById('navLanguage')?.classList.remove('open');
+
+      // 更新按钮文字
+      const langText = document.querySelector('.nav-language-text');
+      if (langText) {
+        langText.textContent = lang === 'zh' ? '中文' : 'English';
+      }
 
       // 应用翻译
       applyTranslations(lang);
