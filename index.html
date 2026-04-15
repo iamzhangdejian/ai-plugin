@@ -108,6 +108,96 @@
       transform: scale(1.1);
     }
 
+    /* 语言切换下拉菜单 */
+    .nav-language {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-language-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+
+    .nav-language-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .nav-language-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .nav-language-arrow {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-language.open .nav-language-arrow {
+      transform: rotate(180deg);
+    }
+
+    .nav-language-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: rgba(26, 26, 46, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 0.5rem;
+      min-width: 140px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      z-index: 1001;
+    }
+
+    .nav-language.open .nav-language-dropdown {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .nav-language-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.875rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+    }
+
+    .nav-language-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .nav-language-item.active {
+      background: rgba(102, 126, 234, 0.2);
+      color: #667eea;
+    }
+
+    .nav-language-flag {
+      font-size: 1.25rem;
+    }
+
     /* Mock 模式指示器 */
     .mock-indicator {
       display: flex;
@@ -721,6 +811,31 @@
         <li><a href="#api">API 文档</a></li>
       </ul>
       <div class="nav-actions">
+        <!-- 语言切换 -->
+        <div class="nav-language" id="navLanguage">
+          <button class="nav-language-btn" onclick="toggleLanguageDropdown()" aria-label="Switch Language">
+            <svg class="nav-language-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span id="currentLang">中文</span>
+            <svg class="nav-language-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="nav-language-dropdown">
+            <div class="nav-language-item active" data-lang="zh" onclick="switchLanguage('zh')">
+              <span class="nav-language-flag">🇨🇳</span>
+              <span>简体中文</span>
+            </div>
+            <div class="nav-language-item" data-lang="en" onclick="switchLanguage('en')">
+              <span class="nav-language-flag">🇺🇸</span>
+              <span>English</span>
+            </div>
+          </div>
+        </div>
+        <!-- GitHub 图标 -->
         <a href="https://github.com/iamzhangdejian/ai-plugin" target="_blank" rel="noopener" class="nav-github" aria-label="GitHub Repository">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
@@ -1120,6 +1235,262 @@
 
   <script type="module" src="/src/index.ts"></script>
   <script>
+    // ==================== 国际化语言切换 ====================
+    const translations = {
+      zh: {
+        // 导航栏
+        'nav.features': '特性',
+        'nav.usage': '使用方式',
+        'nav.api': 'API 文档',
+        'lang.current': '中文',
+        'lang.zh': '简体中文',
+        'lang.en': 'English',
+        'mock.label': 'Mock 模式',
+        // Hero 区域
+        'hero.title.line1': 'AI Robot Assistant',
+        'hero.title.line2': '专注智能交互',
+        'hero.subtitle': '基于 Three.js 的治愈系 3D 机器人，支持语音对话、自由拖拽、智能交互',
+        'hero.btn.trial': '开始体验',
+        'hero.btn.features': '了解更多',
+        'hero.robot.hint': '可爱的 AI 机器人助手\\n点击开始对话',
+        // 特性
+        'features.title': '核心特性',
+        'features.subtitle': '打造有温度的 AI 交互体验',
+        'features.3d.title': '3D 可爱机器人',
+        'features.3d.desc': '基于 Three.js 的治愈系 3D 机器人形象，支持多种表情动画和状态反馈',
+        'features.voice.title': '语音双活',
+        'features.voice.desc': '支持语音唤醒和语音对话，内置 Web Speech API，解放双手',
+        'features.drag.title': '自由拖拽',
+        'features.drag.desc': '支持鼠标/触摸拖拽，惯性吸附到页面边缘，想放哪就放哪',
+        'features.chat.title': '智能对话',
+        'features.chat.desc': '自适应高度对话框，支持 Markdown 格式渲染，代码/表格都能完美展示',
+        'features.responsive.title': '响应式设计',
+        'features.responsive.desc': '完美适配各种屏幕尺寸，手机/平板/电脑都能完美展现',
+        'features.cross.title': '跨框架兼容',
+        'features.cross.desc': 'React / Vue / Angular / 原生 JS 均可无缝集成，一个组件全平台通用',
+        // 使用方式
+        'usage.title': '使用方式',
+        'usage.subtitle': '选择适合你的集成方式',
+        'usage.webcomp.title': 'Web Component',
+        'usage.webcomp.desc': '原生支持，所有现代浏览器都能用',
+        'usage.react.title': 'React',
+        'usage.react.desc': 'React 项目集成',
+        'usage.vue.title': 'Vue',
+        'usage.vue.desc': 'Vue 2/3 项目集成',
+        'usage.angular.title': 'Angular',
+        'usage.angular.desc': 'Angular 项目集成',
+        // API 文档
+        'api.title': 'API 文档',
+        'api.subtitle': '完整的 API 参考',
+        'api.config.title': '配置选项',
+        'api.methods.title': '常用方法',
+        'api.events.title': '事件类型',
+        // 页脚
+        'footer.docs': '文档',
+        'footer.examples': '示例',
+        'footer.issues': 'Issues',
+        'footer.copyright': '© 2025 AI Robot Assistant. MIT License'
+      },
+      en: {
+        // Navigation
+        'nav.features': 'Features',
+        'nav.usage': 'Usage',
+        'nav.api': 'API Docs',
+        'lang.current': 'English',
+        'lang.zh': '简体中文',
+        'lang.en': 'English',
+        'mock.label': 'Mock Mode',
+        // Hero
+        'hero.title.line1': 'AI Robot Assistant',
+        'hero.title.line2': 'Smart Interaction',
+        'hero.subtitle': 'Three.js based cute 3D robot with voice chat, drag & drop, and smart interaction',
+        'hero.btn.trial': 'Try Now',
+        'hero.btn.features': 'Learn More',
+        'hero.robot.hint': 'Cute AI Robot Assistant\\nClick to Start Chat',
+        // Features
+        'features.title': 'Core Features',
+        'features.subtitle': 'Building Warm AI Interaction Experience',
+        'features.3d.title': '3D Cute Robot',
+        'features.3d.desc': 'Three.js based治愈 式 3D robot with multiple expressions and state feedback',
+        'features.voice.title': 'Voice Interaction',
+        'features.voice.desc': 'Voice wake-up and conversation with built-in Web Speech API',
+        'features.drag.title': 'Free Drag',
+        'features.drag.desc': 'Mouse/touch drag with inertia and edge snapping',
+        'features.chat.title': 'Smart Chat',
+        'features.chat.desc': 'Adaptive dialog box with Markdown support for code and tables',
+        'features.responsive.title': 'Responsive Design',
+        'features.responsive.desc': 'Perfect on any screen - phone, tablet, or desktop',
+        'features.cross.title': 'Cross-Framework',
+        'features.cross.desc': 'Works with React, Vue, Angular, or vanilla JS',
+        // Usage
+        'usage.title': 'Usage',
+        'usage.subtitle': 'Choose Your Integration',
+        'usage.webcomp.title': 'Web Component',
+        'usage.webcomp.desc': 'Native support in all modern browsers',
+        'usage.react.title': 'React',
+        'usage.react.desc': 'For React projects',
+        'usage.vue.title': 'Vue',
+        'usage.vue.desc': 'For Vue 2/3 projects',
+        'usage.angular.title': 'Angular',
+        'usage.angular.desc': 'For Angular projects',
+        // API
+        'api.title': 'API Documentation',
+        'api.subtitle': 'Complete API Reference',
+        'api.config.title': 'Configuration',
+        'api.methods.title': 'Methods',
+        'api.events.title': 'Events',
+        // Footer
+        'footer.docs': 'Docs',
+        'footer.examples': 'Examples',
+        'footer.issues': 'Issues',
+        'footer.copyright': '© 2025 AI Robot Assistant. MIT License'
+      }
+    };
+
+    // 当前语言
+    let currentLang = 'zh';
+
+    // 切换语言下拉菜单
+    function toggleLanguageDropdown() {
+      const langEl = document.getElementById('navLanguage');
+      if (langEl) {
+        langEl.classList.toggle('open');
+      }
+    }
+
+    // 切换语言
+    function switchLanguage(lang) {
+      currentLang = lang;
+
+      // 更新当前语言显示
+      const currentLangEl = document.getElementById('currentLang');
+      if (currentLangEl) {
+        currentLangEl.textContent = lang === 'zh' ? '中文' : 'EN';
+      }
+
+      // 更新下拉菜单激活状态
+      document.querySelectorAll('.nav-language-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.lang === lang);
+      });
+
+      // 关闭下拉菜单
+      document.getElementById('navLanguage')?.classList.remove('open');
+
+      // 应用翻译
+      applyTranslations(lang);
+
+      // 保存到 localStorage
+      localStorage.setItem('ai-robot-lang', lang);
+    }
+
+    // 应用翻译
+    function applyTranslations(lang) {
+      const t = translations[lang];
+      if (!t) return;
+
+      // 翻译导航栏
+      document.querySelectorAll('.nav-links a[href="#features"]').forEach(el => el.textContent = t['nav.features']);
+      document.querySelectorAll('.nav-links a[href="#usage"]').forEach(el => el.textContent = t['nav.usage']);
+      document.querySelectorAll('.nav-links a[href="#api"]').forEach(el => el.textContent = t['nav.api']);
+
+      // 翻译 Mock 模式按钮
+      const mockText = document.querySelector('.mock-indicator span:last-child');
+      if (mockText) mockText.textContent = t['mock.label'];
+
+      // 翻译 Hero 区域
+      const heroTitle1 = document.querySelector('.hero-title .title-line:first-child');
+      const heroTitle2 = document.querySelector('.hero-title .title-line:last-child');
+      if (heroTitle1) heroTitle1.textContent = t['hero.title.line1'];
+      if (heroTitle2) heroTitle2.textContent = t['hero.title.line2'];
+
+      const heroSubtitle = document.querySelector('.hero-subtitle');
+      if (heroSubtitle) heroSubtitle.textContent = t['hero.subtitle'];
+
+      const heroBtnTrial = document.querySelector('.hero-buttons .btn-primary');
+      const heroBtnFeatures = document.querySelector('.hero-buttons .btn-secondary');
+      if (heroBtnTrial) heroBtnTrial.textContent = t['hero.btn.trial'];
+      if (heroBtnFeatures) heroBtnFeatures.textContent = t['hero.btn.features'];
+
+      // 翻译机器人提示
+      const robotHint = document.querySelector('.robot-hint');
+      if (robotHint) {
+        robotHint.innerHTML = t['hero.robot.hint'].replace(/\\n/g, '<br>');
+      }
+
+      // 翻译特性标题
+      const featuresTitle = document.querySelector('.section-title');
+      const featuresSubtitle = document.querySelector('.section-subtitle');
+      if (featuresTitle) featuresTitle.textContent = t['features.title'];
+      if (featuresSubtitle) featuresSubtitle.textContent = t['features.subtitle'];
+
+      // 翻译特性卡片
+      document.querySelectorAll('.feature-card').forEach((card, index) => {
+        const keys = ['3d', 'voice', 'drag', 'chat', 'responsive', 'cross'];
+        const key = keys[index];
+        if (key && t[`features.${key}.title`]) {
+          const titleEl = card.querySelector('.feature-title');
+          const descEl = card.querySelector('.feature-desc');
+          if (titleEl) titleEl.textContent = t[`features.${key}.title`];
+          if (descEl) descEl.textContent = t[`features.${key}.desc`];
+        }
+      });
+
+      // 翻译使用方式
+      const usageSection = document.getElementById('usage');
+      if (usageSection) {
+        const usageTitle = usageSection.querySelector('.section-title');
+        const usageSubtitle = usageSection.querySelector('.section-subtitle');
+        if (usageTitle) usageTitle.textContent = t['usage.title'];
+        if (usageSubtitle) usageSubtitle.textContent = t['usage.subtitle'];
+      }
+
+      // 翻译使用方式卡片
+      document.querySelectorAll('.usage-card').forEach((card, index) => {
+        const keys = ['webcomp', 'react', 'vue', 'angular'];
+        const key = keys[index];
+        if (key && t[`usage.${key}.title`]) {
+          const titleEl = card.querySelector('h3');
+          const descEl = card.querySelector('p');
+          if (titleEl) titleEl.textContent = t[`usage.${key}.title`];
+          if (descEl) descEl.textContent = t[`usage.${key}.desc`];
+        }
+      });
+
+      // 翻译 API 文档
+      const apiSection = document.getElementById('api');
+      if (apiSection) {
+        const apiTitle = apiSection.querySelector('.section-title');
+        const apiSubtitle = apiSection.querySelector('.section-subtitle');
+        if (apiTitle) apiTitle.textContent = t['api.title'];
+        if (apiSubtitle) apiSubtitle.textContent = t['api.subtitle'];
+      }
+
+      // 翻译页脚
+      document.querySelectorAll('.footer-links a[href="#"]').forEach((el, i) => {
+        const keys = ['docs', 'examples', 'issues'];
+        if (keys[i] && t[`footer.${keys[i]}`]) {
+          el.textContent = t[`footer.${keys[i]}`];
+        }
+      });
+    }
+
+    // 初始化语言
+    function initLanguage() {
+      const savedLang = localStorage.getItem('ai-robot-lang') || 'zh';
+      switchLanguage(savedLang);
+    }
+
+    // 点击外部关闭下拉菜单
+    document.addEventListener('click', (e) => {
+      const langEl = document.getElementById('navLanguage');
+      if (langEl && !langEl.contains(e.target)) {
+        langEl.classList.remove('open');
+      }
+    });
+
+    // 初始化
+    initLanguage();
+
     // API 配置状态
     let isMockMode = true;
     let apiConfig = {
