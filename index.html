@@ -805,10 +805,10 @@
     <div class="nav-content">
       <a href="#" class="nav-logo">🤖 AI Robot</a>
       <ul class="nav-links">
-        <li><a href="#hero">首页</a></li>
-        <li><a href="#features">特性</a></li>
-        <li><a href="#usage">使用方式</a></li>
-        <li><a href="#api">API 文档</a></li>
+        <li><a href="#hero" data-i18n="nav.home">首页</a></li>
+        <li><a href="#features" data-i18n="nav.features">特性</a></li>
+        <li><a href="#usage" data-i18n="nav.usage">使用方式</a></li>
+        <li><a href="#api" data-i18n="nav.api">API 文档</a></li>
       </ul>
       <div class="nav-actions">
         <!-- 语言切换 -->
@@ -827,11 +827,11 @@
           <div class="nav-language-dropdown">
             <div class="nav-language-item active" data-lang="zh" onclick="switchLanguage('zh')">
               <span class="nav-language-flag">🇨🇳</span>
-              <span>简体中文</span>
+              <span data-i18n="lang.zh">简体中文</span>
             </div>
             <div class="nav-language-item" data-lang="en" onclick="switchLanguage('en')">
               <span class="nav-language-flag">🇺🇸</span>
-              <span>English</span>
+              <span data-i18n="lang.en">English</span>
             </div>
           </div>
         </div>
@@ -843,7 +843,7 @@
         </a>
         <button class="mock-indicator" id="mockIndicator" onclick="toggleApiConfig()">
           <span class="mock-dot"></span>
-          <span>Mock 模式</span>
+          <span data-i18n="nav.mock">Mock 模式</span>
         </button>
       </div>
     </div>
@@ -853,8 +853,8 @@
   <div class="api-config-overlay" id="apiConfigOverlay">
     <div class="api-config-modal">
       <div class="api-config-header">
-        <h3>⚙️ API 配置</h3>
-        <p>配置 AI 后端服务，开启真实对话体验</p>
+        <h3 data-i18n="api.config.title">⚙️ API 配置</h3>
+        <p data-i18n="api.config.desc">配置 AI 后端服务，开启真实对话体验</p>
       </div>
       <form class="api-config-form" id="apiConfigForm" onsubmit="saveApiConfig(event)">
         <div class="form-group">
@@ -866,10 +866,11 @@
             type="text"
             id="apiKey"
             name="apiKey"
+            data-i18n-placeholder="form.apiKey.placeholder"
             placeholder="请输入 API Key"
             autocomplete="off"
           />
-          <div class="form-hint">
+          <div class="form-hint" data-i18n="form.apiKey.hint">
             🔐 您的 API Key 只会存储在本地
           </div>
         </div>
@@ -882,20 +883,21 @@
             type="url"
             id="apiEndpoint"
             name="apiEndpoint"
+            data-i18n-placeholder="form.apiEndpoint.placeholder"
             placeholder="https://api.example.com/chat"
             autocomplete="off"
           />
-          <div class="form-hint">
+          <div class="form-hint" data-i18n="form.apiEndpoint.hint">
             🌐 AI 服务的完整 URL 地址
           </div>
         </div>
         <div class="status-message" id="statusMessage"></div>
         <div class="api-config-actions">
           <button type="button" class="api-config-btn secondary" onclick="closeApiConfig()">
-            ✕ 取消
+            <span data-i18n="form.cancel">✕ 取消</span>
           </button>
           <button type="submit" class="api-config-btn primary">
-            ✓ 保存配置
+            <span data-i18n="form.save">✓ 保存配置</span>
           </button>
         </div>
       </form>
@@ -906,17 +908,19 @@
   <section id="hero" class="hero">
     <div class="hero-content">
       <div class="hero-text">
-        <span class="hero-badge">✨ Web Components 驱动</span>
-        <h1>AI Robot Assistant</h1>
-        <p>一个可爱、治愈系的 3D AI 机器人助手浏览器插件<br>
-           支持语音交互、自由拖拽和智能对话<br>
-           可轻松集成到任意前端项目中</p>
+        <span class="hero-badge" data-i18n="hero.badge">✨ Web Components 驱动</span>
+        <h1 data-i18n="hero.title">AI Robot Assistant</h1>
+        <p data-i18n="hero.desc">
+          一个可爱、治愈系的 3D AI 机器人助手浏览器插件<br>
+          支持语音交互、自由拖拽和智能对话<br>
+          可轻松集成到任意前端项目中
+        </p>
         <div class="hero-buttons">
           <button class="btn btn-primary" onclick="activateRobot()">
-            💬 和我互动
+            <span data-i18n="hero.btn.interact">💬 和我互动</span>
           </button>
           <a href="#usage" class="btn btn-secondary">
-            📖 查看文档
+            <span data-i18n="hero.btn.docs">📖 查看文档</span>
           </a>
         </div>
       </div>
@@ -935,12 +939,12 @@
               visible="true"
             ></ai-robot>
           </div>
-          <p class="robot-hint">可爱的 AI 机器人助手<br>点击开始对话</p>
+          <p class="robot-hint" data-i18n="hero.robot.hint">可爱的 AI 机器人助手<br>点击开始对话</p>
         </div>
       </div>
     </div>
     <div class="scroll-hint">
-      <span>向下滚动</span>
+      <span data-i18n="hero.scroll">向下滚动</span>
       <span class="scroll-arrow">↓</span>
     </div>
   </section>
@@ -949,49 +953,49 @@
   <section id="features" class="features-section">
     <div class="section-container">
       <div class="section-header">
-        <h2>✨ 核心特性</h2>
-        <p>为现代 Web 应用打造的最佳 AI 助手体验</p>
+        <h2 data-i18n="features.title">✨ 核心特性</h2>
+        <p data-i18n="features.desc">为现代 Web 应用打造的最佳 AI 助手体验</p>
       </div>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">🎨</div>
-          <h3>3D 可爱机器人</h3>
-          <p>基于 Three.js 的治愈系 3D 机器人形象，支持多种表情动画和状态反馈，让交互更有温度。</p>
+          <h3 data-i18n="features.f1.title">3D 可爱机器人</h3>
+          <p data-i18n="features.f1.desc">基于 Three.js 的治愈系 3D 机器人形象，支持多种表情动画和状态反馈，让交互更有温度。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🎤</div>
-          <h3>语音双活</h3>
-          <p>支持语音唤醒和语音对话，内置 Web Speech API，解放双手，自然交互。</p>
+          <h3 data-i18n="features.f2.title">语音双活</h3>
+          <p data-i18n="features.f2.desc">支持语音唤醒和语音对话，内置 Web Speech API，解放双手，自然交互。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">✋</div>
-          <h3>自由拖拽</h3>
-          <p>支持鼠标/触摸拖拽，惯性吸附到页面边缘，位置随心而定。</p>
+          <h3 data-i18n="features.f3.title">自由拖拽</h3>
+          <p data-i18n="features.f3.desc">支持鼠标/触摸拖拽，惯性吸附到页面边缘，位置随心而定。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">💬</div>
-          <h3>智能对话</h3>
-          <p>自适应高度对话框，支持 Markdown 格式渲染，对话内容清晰易读。</p>
+          <h3 data-i18n="features.f4.title">智能对话</h3>
+          <p data-i18n="features.f4.desc">自适应高度对话框，支持 Markdown 格式渲染，对话内容清晰易读。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">📱</div>
-          <h3>响应式设计</h3>
-          <p>完美适配各种屏幕尺寸，从桌面到移动端，体验始终如一。</p>
+          <h3 data-i18n="features.f5.title">响应式设计</h3>
+          <p data-i18n="features.f5.desc">完美适配各种屏幕尺寸，从桌面到移动端，体验始终如一。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🔌</div>
-          <h3>跨框架兼容</h3>
-          <p>Web Components 封装，React / Vue / Angular / 原生 JS 均可无缝集成。</p>
+          <h3 data-i18n="features.f6.title">跨框架兼容</h3>
+          <p data-i18n="features.f6.desc">Web Components 封装，React / Vue / Angular / 原生 JS 均可无缝集成。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🎨</div>
-          <h3>多主题支持</h3>
-          <p>内置蓝色、绿色、紫色三种主题，还可自定义颜色满足个性化需求。</p>
+          <h3 data-i18n="features.f7.title">多主题支持</h3>
+          <p data-i18n="features.f7.desc">内置蓝色、绿色、紫色三种主题，还可自定义颜色满足个性化需求。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🔧</div>
-          <h3>易于集成</h3>
-          <p>简单的 API 设计，几行代码即可将机器人添加到你的项目中。</p>
+          <h3 data-i18n="features.f8.title">易于集成</h3>
+          <p data-i18n="features.f8.desc">简单的 API 设计，几行代码即可将机器人添加到你的项目中。</p>
         </div>
       </div>
     </div>
@@ -1001,14 +1005,14 @@
   <section id="usage" class="usage-section">
     <div class="section-container">
       <div class="section-header">
-        <h2>🚀 快速开始</h2>
-        <p>选择适合你的集成方式</p>
+        <h2 data-i18n="usage.title">🚀 快速开始</h2>
+        <p data-i18n="usage.desc">选择适合你的集成方式</p>
       </div>
       <div class="usage-grid">
         <!-- Web Component -->
         <div class="usage-card">
-          <h3>🌐 Web Component</h3>
-          <p>推荐方式，声明式使用，最简单直观</p>
+          <h3 data-i18n="usage.webcomp.title">🌐 Web Component</h3>
+          <p data-i18n="usage.webcomp.desc">推荐方式，声明式使用，最简单直观</p>
           <div class="code-wrapper">
             <div class="code-block"><span class="keyword">&lt;ai-robot</span>
   <span class="function">api-key</span>=<span class="string">"your-api-key"</span>
@@ -1021,8 +1025,8 @@
 
         <!-- JavaScript API -->
         <div class="usage-card">
-          <h3>⚡ JavaScript API</h3>
-          <p>编程式创建，更灵活的控制</p>
+          <h3 data-i18n="usage.jsapi.title">⚡ JavaScript API</h3>
+          <p data-i18n="usage.jsapi.desc">编程式创建，更灵活的控制</p>
           <div class="code-wrapper">
             <div class="code-block"><span class="keyword">import</span> AIRobot <span class="keyword">from</span> <span class="string">'ai-robot-assistant'</span>;
 
@@ -1036,8 +1040,8 @@
 
         <!-- React -->
         <div class="usage-card">
-          <h3>⚛️ React 组件</h3>
-          <p>在 React 应用中完美融合</p>
+          <h3 data-i18n="usage.react.title">⚛️ React 组件</h3>
+          <p data-i18n="usage.react.desc">在 React 应用中完美融合</p>
           <div class="code-wrapper">
             <div class="code-block"><span class="keyword">import</span> { useEffect, useRef } <span class="keyword">from</span> <span class="string">'react'</span>;
 <span class="keyword">import</span> <span class="string">'ai-robot-assistant'</span>;
@@ -1056,8 +1060,8 @@
 
         <!-- Vue -->
         <div class="usage-card">
-          <h3>🟢 Vue 组件</h3>
-          <p>在 Vue 应用中轻松使用</p>
+          <h3 data-i18n="usage.vue.title">🟢 Vue 组件</h3>
+          <p data-i18n="usage.vue.desc">在 Vue 应用中轻松使用</p>
           <div class="code-wrapper">
             <div class="code-block"><span class="keyword">&lt;template&gt;</span>
   &lt;<span class="function">ai-robot</span> ref=<span class="string">"robotRef"</span> /&gt;
@@ -1083,18 +1087,18 @@
   <section id="api" class="api-section">
     <div class="section-container">
       <div class="section-header">
-        <h2>📖 API 文档</h2>
-        <p>完整的配置选项和方法说明</p>
+        <h2 data-i18n="api.header">📖 API 文档</h2>
+        <p data-i18n="api.header.desc">完整的配置选项和方法说明</p>
       </div>
 
-      <h3 style="color: white; margin-bottom: 1.5rem; font-size: 1.5rem;">配置选项</h3>
+      <h3 data-i18n="api.config.header" style="color: white; margin-bottom: 1.5rem; font-size: 1.5rem;">配置选项</h3>
       <table class="api-table">
         <thead>
           <tr>
-            <th>参数</th>
-            <th>类型</th>
-            <th>默认值</th>
-            <th>说明</th>
+            <th data-i18n="api.table.param">参数</th>
+            <th data-i18n="api.table.type">类型</th>
+            <th data-i18n="api.table.default">默认值</th>
+            <th data-i18n="api.table.desc">说明</th>
           </tr>
         </thead>
         <tbody>
@@ -1102,49 +1106,49 @@
             <td><span class="api-param">apiKey</span></td>
             <td><code>string</code></td>
             <td><code>''</code></td>
-            <td>AI API 密钥</td>
+            <td data-i18n="api.config.apiKey.desc">AI API 密钥</td>
           </tr>
           <tr>
             <td><span class="api-param">apiEndpoint</span></td>
             <td><code>string</code></td>
             <td><code>''</code></td>
-            <td>AI API 端点 URL</td>
+            <td data-i18n="api.config.apiEndpoint.desc">AI API 端点 URL</td>
           </tr>
           <tr>
             <td><span class="api-param">wakeWord</span></td>
             <td><code>string</code></td>
             <td><code>'嗨小智'</code></td>
-            <td>语音唤醒词</td>
+            <td data-i18n="api.config.wakeWord.desc">语音唤醒词</td>
           </tr>
           <tr>
             <td><span class="api-param">theme</span></td>
             <td><code>'blue' | 'green' | 'purple'</code></td>
             <td><code>'blue'</code></td>
-            <td>主题颜色</td>
+            <td data-i18n="api.config.theme.desc">主题颜色</td>
           </tr>
           <tr>
             <td><span class="api-param">position</span></td>
             <td><code>'left' | 'right'</code></td>
             <td><code>'right'</code></td>
-            <td>初始位置</td>
+            <td data-i18n="api.config.position.desc">初始位置</td>
           </tr>
           <tr>
             <td><span class="api-param">voice.enabled</span></td>
             <td><code>boolean</code></td>
             <td><code>true</code></td>
-            <td>是否启用语音</td>
+            <td data-i18n="api.config.voice.desc">是否启用语音</td>
           </tr>
         </tbody>
       </table>
 
-      <h3 style="color: white; margin: 3rem 0 1.5rem; font-size: 1.5rem;">常用方法</h3>
+      <h3 data-i18n="api.methods.header" style="color: white; margin: 3rem 0 1.5rem; font-size: 1.5rem;">常用方法</h3>
       <table class="api-table">
         <thead>
           <tr>
-            <th>方法</th>
-            <th>参数</th>
-            <th>返回值</th>
-            <th>说明</th>
+            <th data-i18n="api.methods.table.method">方法</th>
+            <th data-i18n="api.methods.table.param">参数</th>
+            <th data-i18n="api.methods.table.return">返回值</th>
+            <th data-i18n="api.methods.table.desc">说明</th>
           </tr>
         </thead>
         <tbody>
@@ -1152,70 +1156,70 @@
             <td><span class="api-param">send()</span></td>
             <td><code>message: string</code></td>
             <td><code>Promise&lt;string&gt;</code></td>
-            <td>发送消息并获取 AI 回复</td>
+            <td data-i18n="api.methods.send.desc">发送消息并获取 AI 回复</td>
           </tr>
           <tr>
             <td><span class="api-param">setConfig()</span></td>
             <td><code>config: object</code></td>
             <td><code>void</code></td>
-            <td>更新配置</td>
+            <td data-i18n="api.methods.setConfig.desc">更新配置</td>
           </tr>
           <tr>
             <td><span class="api-param">show() / hide()</span></td>
             <td><code>-</code></td>
             <td><code>void</code></td>
-            <td>控制机器人显示/隐藏</td>
+            <td data-i18n="api.methods.show.desc">控制机器人显示/隐藏</td>
           </tr>
           <tr>
             <td><span class="api-param">on() / off()</span></td>
             <td><code>event, callback</code></td>
             <td><code>void</code></td>
-            <td>事件监听/移除</td>
+            <td data-i18n="api.methods.on.desc">事件监听/移除</td>
           </tr>
           <tr>
             <td><span class="api-param">clearHistory()</span></td>
             <td><code>-</code></td>
             <td><code>void</code></td>
-            <td>清空对话历史</td>
+            <td data-i18n="api.methods.clearHistory.desc">清空对话历史</td>
           </tr>
           <tr>
             <td><span class="api-param">getState()</span></td>
             <td><code>-</code></td>
             <td><code>RobotState</code></td>
-            <td>获取当前状态</td>
+            <td data-i18n="api.methods.getState.desc">获取当前状态</td>
           </tr>
         </tbody>
       </table>
 
-      <h3 style="color: white; margin: 3rem 0 1.5rem; font-size: 1.5rem;">事件类型</h3>
+      <h3 data-i18n="api.events.header" style="color: white; margin: 3rem 0 1.5rem; font-size: 1.5rem;">事件类型</h3>
       <table class="api-table">
         <thead>
           <tr>
-            <th>事件名</th>
-            <th>回调参数</th>
-            <th>说明</th>
+            <th data-i18n="api.events.table.event">事件名</th>
+            <th data-i18n="api.events.table.param">回调参数</th>
+            <th data-i18n="api.events.table.desc">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><span class="api-param">robot-ready</span></td>
             <td><code>-</code></td>
-            <td>机器人初始化完成</td>
+            <td data-i18n="api.events.robotReady.desc">机器人初始化完成</td>
           </tr>
           <tr>
             <td><span class="api-param">state-change</span></td>
             <td><code>{ from, to }</code></td>
-            <td>状态变化</td>
+            <td data-i18n="api.events.stateChange.desc">状态变化</td>
           </tr>
           <tr>
             <td><span class="api-param">message-sent</span></td>
             <td><code>Message</code></td>
-            <td>消息已发送</td>
+            <td data-i18n="api.events.messageSent.desc">消息已发送</td>
           </tr>
           <tr>
             <td><span class="api-param">message-received</span></td>
             <td><code>Message</code></td>
-            <td>消息已接收</td>
+            <td data-i18n="api.events.messageReceived.desc">消息已接收</td>
           </tr>
         </tbody>
       </table>
@@ -1226,11 +1230,11 @@
   <footer class="footer">
     <ul class="footer-links">
       <li><a href="https://github.com" target="_blank">GitHub</a></li>
-      <li><a href="#">文档</a></li>
-      <li><a href="#">示例</a></li>
-      <li><a href="#">Issues</a></li>
+      <li><a href="#" data-i18n="footer.docs">文档</a></li>
+      <li><a href="#" data-i18n="footer.examples">示例</a></li>
+      <li><a href="#" data-i18n="footer.issues">Issues</a></li>
     </ul>
-    <p>MIT License © 2024 AI Robot Assistant</p>
+    <p data-i18n="footer.copyright">MIT License © 2024 AI Robot Assistant</p>
   </footer>
 
   <script type="module" src="/src/index.ts"></script>
@@ -1239,52 +1243,94 @@
     const translations = {
       zh: {
         // 导航栏
+        'nav.home': '首页',
         'nav.features': '特性',
         'nav.usage': '使用方式',
         'nav.api': 'API 文档',
         'lang.current': '中文',
         'lang.zh': '简体中文',
         'lang.en': 'English',
-        'mock.label': 'Mock 模式',
+        'nav.mock': 'Mock 模式',
+        // API 配置弹窗
+        'api.config.title': '⚙️ API 配置',
+        'api.config.desc': '配置 AI 后端服务，开启真实对话体验',
+        'form.apiKey.placeholder': '请输入 API Key',
+        'form.apiKey.hint': '🔐 您的 API Key 只会存储在本地',
+        'form.apiEndpoint.placeholder': 'https://api.example.com/chat',
+        'form.apiEndpoint.hint': '🌐 AI 服务的完整 URL 地址',
+        'form.cancel': '✕ 取消',
+        'form.save': '✓ 保存配置',
         // Hero 区域
-        'hero.title.line1': 'AI Robot Assistant',
-        'hero.title.line2': '专注智能交互',
-        'hero.subtitle': '基于 Three.js 的治愈系 3D 机器人，支持语音对话、自由拖拽、智能交互',
-        'hero.btn.trial': '开始体验',
-        'hero.btn.features': '了解更多',
-        'hero.robot.hint': '可爱的 AI 机器人助手\\n点击开始对话',
+        'hero.badge': '✨ Web Components 驱动',
+        'hero.title': 'AI Robot Assistant',
+        'hero.desc': '一个可爱、治愈系的 3D AI 机器人助手浏览器插件<br>支持语音交互、自由拖拽和智能对话<br>可轻松集成到任意前端项目中',
+        'hero.btn.interact': '💬 和我互动',
+        'hero.btn.docs': '📖 查看文档',
+        'hero.scroll': '向下滚动',
+        'hero.robot.hint': '可爱的 AI 机器人助手<br>点击开始对话',
         // 特性
-        'features.title': '核心特性',
-        'features.subtitle': '打造有温度的 AI 交互体验',
-        'features.3d.title': '3D 可爱机器人',
-        'features.3d.desc': '基于 Three.js 的治愈系 3D 机器人形象，支持多种表情动画和状态反馈',
-        'features.voice.title': '语音双活',
-        'features.voice.desc': '支持语音唤醒和语音对话，内置 Web Speech API，解放双手',
-        'features.drag.title': '自由拖拽',
-        'features.drag.desc': '支持鼠标/触摸拖拽，惯性吸附到页面边缘，想放哪就放哪',
-        'features.chat.title': '智能对话',
-        'features.chat.desc': '自适应高度对话框，支持 Markdown 格式渲染，代码/表格都能完美展示',
-        'features.responsive.title': '响应式设计',
-        'features.responsive.desc': '完美适配各种屏幕尺寸，手机/平板/电脑都能完美展现',
-        'features.cross.title': '跨框架兼容',
-        'features.cross.desc': 'React / Vue / Angular / 原生 JS 均可无缝集成，一个组件全平台通用',
+        'features.title': '✨ 核心特性',
+        'features.desc': '为现代 Web 应用打造的最佳 AI 助手体验',
+        'features.f1.title': '3D 可爱机器人',
+        'features.f1.desc': '基于 Three.js 的治愈系 3D 机器人形象，支持多种表情动画和状态反馈，让交互更有温度。',
+        'features.f2.title': '语音双活',
+        'features.f2.desc': '支持语音唤醒和语音对话，内置 Web Speech API，解放双手，自然交互。',
+        'features.f3.title': '自由拖拽',
+        'features.f3.desc': '支持鼠标/触摸拖拽，惯性吸附到页面边缘，位置随心而定。',
+        'features.f4.title': '智能对话',
+        'features.f4.desc': '自适应高度对话框，支持 Markdown 格式渲染，对话内容清晰易读。',
+        'features.f5.title': '响应式设计',
+        'features.f5.desc': '完美适配各种屏幕尺寸，从桌面到移动端，体验始终如一。',
+        'features.f6.title': '跨框架兼容',
+        'features.f6.desc': 'Web Components 封装，React / Vue / Angular / 原生 JS 均可无缝集成。',
+        'features.f7.title': '多主题支持',
+        'features.f7.desc': '内置蓝色、绿色、紫色三种主题，还可自定义颜色满足个性化需求。',
+        'features.f8.title': '易于集成',
+        'features.f8.desc': '简单的 API 设计，几行代码即可将机器人添加到你的项目中。',
         // 使用方式
-        'usage.title': '使用方式',
-        'usage.subtitle': '选择适合你的集成方式',
-        'usage.webcomp.title': 'Web Component',
-        'usage.webcomp.desc': '原生支持，所有现代浏览器都能用',
-        'usage.react.title': 'React',
-        'usage.react.desc': 'React 项目集成',
-        'usage.vue.title': 'Vue',
-        'usage.vue.desc': 'Vue 2/3 项目集成',
-        'usage.angular.title': 'Angular',
-        'usage.angular.desc': 'Angular 项目集成',
+        'usage.title': '🚀 快速开始',
+        'usage.desc': '选择适合你的集成方式',
+        'usage.webcomp.title': '🌐 Web Component',
+        'usage.webcomp.desc': '推荐方式，声明式使用，最简单直观',
+        'usage.jsapi.title': '⚡ JavaScript API',
+        'usage.jsapi.desc': '编程式创建，更灵活的控制',
+        'usage.react.title': '⚛️ React 组件',
+        'usage.react.desc': '在 React 应用中完美融合',
+        'usage.vue.title': '🟢 Vue 组件',
+        'usage.vue.desc': '在 Vue 应用中轻松使用',
         // API 文档
-        'api.title': 'API 文档',
-        'api.subtitle': '完整的 API 参考',
-        'api.config.title': '配置选项',
-        'api.methods.title': '常用方法',
-        'api.events.title': '事件类型',
+        'api.header': '📖 API 文档',
+        'api.header.desc': '完整的配置选项和方法说明',
+        'api.config.header': '配置选项',
+        'api.table.param': '参数',
+        'api.table.type': '类型',
+        'api.table.default': '默认值',
+        'api.table.desc': '说明',
+        'api.config.apiKey.desc': 'AI API 密钥',
+        'api.config.apiEndpoint.desc': 'AI API 端点 URL',
+        'api.config.wakeWord.desc': '语音唤醒词',
+        'api.config.theme.desc': '主题颜色',
+        'api.config.position.desc': '初始位置',
+        'api.config.voice.desc': '是否启用语音',
+        'api.methods.header': '常用方法',
+        'api.methods.table.method': '方法',
+        'api.methods.table.param': '参数',
+        'api.methods.table.return': '返回值',
+        'api.methods.table.desc': '说明',
+        'api.methods.send.desc': '发送消息并获取 AI 回复',
+        'api.methods.setConfig.desc': '更新配置',
+        'api.methods.show.desc': '控制机器人显示/隐藏',
+        'api.methods.on.desc': '事件监听/移除',
+        'api.methods.clearHistory.desc': '清空对话历史',
+        'api.methods.getState.desc': '获取当前状态',
+        'api.events.header': '事件类型',
+        'api.events.table.event': '事件名',
+        'api.events.table.param': '回调参数',
+        'api.events.table.desc': '说明',
+        'api.events.robotReady.desc': '机器人初始化完成',
+        'api.events.stateChange.desc': '状态变化',
+        'api.events.messageSent.desc': '消息已发送',
+        'api.events.messageReceived.desc': '消息已接收',
         // 页脚
         'footer.docs': '文档',
         'footer.examples': '示例',
@@ -1293,52 +1339,94 @@
       },
       en: {
         // Navigation
+        'nav.home': 'Home',
         'nav.features': 'Features',
         'nav.usage': 'Usage',
         'nav.api': 'API Docs',
         'lang.current': 'English',
         'lang.zh': '简体中文',
         'lang.en': 'English',
-        'mock.label': 'Mock Mode',
+        'nav.mock': 'Mock Mode',
+        // API Config Modal
+        'api.config.title': '⚙️ API Configuration',
+        'api.config.desc': 'Configure AI backend service for real conversation experience',
+        'form.apiKey.placeholder': 'Enter API Key',
+        'form.apiKey.hint': '🔐 Your API Key is stored locally only',
+        'form.apiEndpoint.placeholder': 'https://api.example.com/chat',
+        'form.apiEndpoint.hint': '🌐 Complete URL of AI service',
+        'form.cancel': '✕ Cancel',
+        'form.save': '✓ Save Configuration',
         // Hero
-        'hero.title.line1': 'AI Robot Assistant',
-        'hero.title.line2': 'Smart Interaction',
-        'hero.subtitle': 'Three.js based cute 3D robot with voice chat, drag & drop, and smart interaction',
-        'hero.btn.trial': 'Try Now',
-        'hero.btn.features': 'Learn More',
-        'hero.robot.hint': 'Cute AI Robot Assistant\\nClick to Start Chat',
+        'hero.badge': '✨ Powered by Web Components',
+        'hero.title': 'AI Robot Assistant',
+        'hero.desc': 'A cute, healing 3D AI robot assistant browser plugin<br>Supports voice interaction, free drag-and-drop, and smart conversation<br>Easily integrate into any frontend project',
+        'hero.btn.interact': '💬 Interact With Me',
+        'hero.btn.docs': '📖 View Docs',
+        'hero.scroll': 'Scroll Down',
+        'hero.robot.hint': 'Cute AI Robot Assistant<br>Click to Start Chat',
         // Features
         'features.title': 'Core Features',
-        'features.subtitle': 'Building Warm AI Interaction Experience',
-        'features.3d.title': '3D Cute Robot',
-        'features.3d.desc': 'Three.js based治愈 式 3D robot with multiple expressions and state feedback',
-        'features.voice.title': 'Voice Interaction',
-        'features.voice.desc': 'Voice wake-up and conversation with built-in Web Speech API',
-        'features.drag.title': 'Free Drag',
-        'features.drag.desc': 'Mouse/touch drag with inertia and edge snapping',
-        'features.chat.title': 'Smart Chat',
-        'features.chat.desc': 'Adaptive dialog box with Markdown support for code and tables',
-        'features.responsive.title': 'Responsive Design',
-        'features.responsive.desc': 'Perfect on any screen - phone, tablet, or desktop',
-        'features.cross.title': 'Cross-Framework',
-        'features.cross.desc': 'Works with React, Vue, Angular, or vanilla JS',
+        'features.desc': 'Best AI Assistant Experience for Modern Web Applications',
+        'features.f1.title': '3D Cute Robot',
+        'features.f1.desc': 'Three.js based healing 3D robot with multiple expression animations and state feedback, making interaction more warm.',
+        'features.f2.title': 'Voice Interaction',
+        'features.f2.desc': 'Supports voice wake-up and conversation with built-in Web Speech API, hands-free natural interaction.',
+        'features.f3.title': 'Free Drag',
+        'features.f3.desc': 'Supports mouse/touch drag with inertia and edge snapping, position as you like.',
+        'features.f4.title': 'Smart Chat',
+        'features.f4.desc': 'Adaptive height dialog box with Markdown format rendering, clear and readable conversation content.',
+        'features.f5.title': 'Responsive Design',
+        'features.f5.desc': 'Perfect adaptation to various screen sizes, from desktop to mobile, consistent experience.',
+        'features.f6.title': 'Cross-Framework Compatible',
+        'features.f6.desc': 'Web Components encapsulation, seamless integration with React / Vue / Angular / vanilla JS.',
+        'features.f7.title': 'Multi-Theme Support',
+        'features.f7.desc': 'Built-in blue, green, purple three themes, or customize colors to meet personalized needs.',
+        'features.f8.title': 'Easy Integration',
+        'features.f8.desc': 'Simple API design, add the robot to your project with just a few lines of code.',
         // Usage
-        'usage.title': 'Usage',
-        'usage.subtitle': 'Choose Your Integration',
-        'usage.webcomp.title': 'Web Component',
-        'usage.webcomp.desc': 'Native support in all modern browsers',
-        'usage.react.title': 'React',
-        'usage.react.desc': 'For React projects',
-        'usage.vue.title': 'Vue',
-        'usage.vue.desc': 'For Vue 2/3 projects',
-        'usage.angular.title': 'Angular',
-        'usage.angular.desc': 'For Angular projects',
-        // API
-        'api.title': 'API Documentation',
-        'api.subtitle': 'Complete API Reference',
-        'api.config.title': 'Configuration',
-        'api.methods.title': 'Methods',
-        'api.events.title': 'Events',
+        'usage.title': '🚀 Quick Start',
+        'usage.desc': 'Choose Your Integration',
+        'usage.webcomp.title': '🌐 Web Component',
+        'usage.webcomp.desc': 'Recommended approach, declarative usage, simplest and most intuitive',
+        'usage.jsapi.title': '⚡ JavaScript API',
+        'usage.jsapi.desc': 'Programmatic creation, more flexible control',
+        'usage.react.title': '⚛️ React Component',
+        'usage.react.desc': 'Seamless integration in React applications',
+        'usage.vue.title': '🟢 Vue Component',
+        'usage.vue.desc': 'Easy integration in Vue applications',
+        // API Documentation
+        'api.header': '📖 API Documentation',
+        'api.header.desc': 'Complete configuration options and method descriptions',
+        'api.config.header': 'Configuration Options',
+        'api.table.param': 'Parameter',
+        'api.table.type': 'Type',
+        'api.table.default': 'Default',
+        'api.table.desc': 'Description',
+        'api.config.apiKey.desc': 'AI API Key',
+        'api.config.apiEndpoint.desc': 'AI API Endpoint URL',
+        'api.config.wakeWord.desc': 'Voice wake-up word',
+        'api.config.theme.desc': 'Theme color',
+        'api.config.position.desc': 'Initial position',
+        'api.config.voice.desc': 'Enable voice features',
+        'api.methods.header': 'Common Methods',
+        'api.methods.table.method': 'Method',
+        'api.methods.table.param': 'Parameters',
+        'api.methods.table.return': 'Returns',
+        'api.methods.table.desc': 'Description',
+        'api.methods.send.desc': 'Send message and get AI response',
+        'api.methods.setConfig.desc': 'Update configuration',
+        'api.methods.show.desc': 'Show/hide robot',
+        'api.methods.on.desc': 'Event listener add/remove',
+        'api.methods.clearHistory.desc': 'Clear conversation history',
+        'api.methods.getState.desc': 'Get current state',
+        'api.events.header': 'Event Types',
+        'api.events.table.event': 'Event',
+        'api.events.table.param': 'Callback Params',
+        'api.events.table.desc': 'Description',
+        'api.events.robotReady.desc': 'Robot initialization complete',
+        'api.events.stateChange.desc': 'State changed',
+        'api.events.messageSent.desc': 'Message sent',
+        'api.events.messageReceived.desc': 'Message received',
         // Footer
         'footer.docs': 'Docs',
         'footer.examples': 'Examples',
@@ -1383,97 +1471,6 @@
       localStorage.setItem('ai-robot-lang', lang);
     }
 
-    // 应用翻译
-    function applyTranslations(lang) {
-      const t = translations[lang];
-      if (!t) return;
-
-      // 翻译导航栏
-      document.querySelectorAll('.nav-links a[href="#features"]').forEach(el => el.textContent = t['nav.features']);
-      document.querySelectorAll('.nav-links a[href="#usage"]').forEach(el => el.textContent = t['nav.usage']);
-      document.querySelectorAll('.nav-links a[href="#api"]').forEach(el => el.textContent = t['nav.api']);
-
-      // 翻译 Mock 模式按钮
-      const mockText = document.querySelector('.mock-indicator span:last-child');
-      if (mockText) mockText.textContent = t['mock.label'];
-
-      // 翻译 Hero 区域
-      const heroTitle1 = document.querySelector('.hero-title .title-line:first-child');
-      const heroTitle2 = document.querySelector('.hero-title .title-line:last-child');
-      if (heroTitle1) heroTitle1.textContent = t['hero.title.line1'];
-      if (heroTitle2) heroTitle2.textContent = t['hero.title.line2'];
-
-      const heroSubtitle = document.querySelector('.hero-subtitle');
-      if (heroSubtitle) heroSubtitle.textContent = t['hero.subtitle'];
-
-      const heroBtnTrial = document.querySelector('.hero-buttons .btn-primary');
-      const heroBtnFeatures = document.querySelector('.hero-buttons .btn-secondary');
-      if (heroBtnTrial) heroBtnTrial.textContent = t['hero.btn.trial'];
-      if (heroBtnFeatures) heroBtnFeatures.textContent = t['hero.btn.features'];
-
-      // 翻译机器人提示
-      const robotHint = document.querySelector('.robot-hint');
-      if (robotHint) {
-        robotHint.innerHTML = t['hero.robot.hint'].replace(/\\n/g, '<br>');
-      }
-
-      // 翻译特性标题
-      const featuresTitle = document.querySelector('.section-title');
-      const featuresSubtitle = document.querySelector('.section-subtitle');
-      if (featuresTitle) featuresTitle.textContent = t['features.title'];
-      if (featuresSubtitle) featuresSubtitle.textContent = t['features.subtitle'];
-
-      // 翻译特性卡片
-      document.querySelectorAll('.feature-card').forEach((card, index) => {
-        const keys = ['3d', 'voice', 'drag', 'chat', 'responsive', 'cross'];
-        const key = keys[index];
-        if (key && t[`features.${key}.title`]) {
-          const titleEl = card.querySelector('.feature-title');
-          const descEl = card.querySelector('.feature-desc');
-          if (titleEl) titleEl.textContent = t[`features.${key}.title`];
-          if (descEl) descEl.textContent = t[`features.${key}.desc`];
-        }
-      });
-
-      // 翻译使用方式
-      const usageSection = document.getElementById('usage');
-      if (usageSection) {
-        const usageTitle = usageSection.querySelector('.section-title');
-        const usageSubtitle = usageSection.querySelector('.section-subtitle');
-        if (usageTitle) usageTitle.textContent = t['usage.title'];
-        if (usageSubtitle) usageSubtitle.textContent = t['usage.subtitle'];
-      }
-
-      // 翻译使用方式卡片
-      document.querySelectorAll('.usage-card').forEach((card, index) => {
-        const keys = ['webcomp', 'react', 'vue', 'angular'];
-        const key = keys[index];
-        if (key && t[`usage.${key}.title`]) {
-          const titleEl = card.querySelector('h3');
-          const descEl = card.querySelector('p');
-          if (titleEl) titleEl.textContent = t[`usage.${key}.title`];
-          if (descEl) descEl.textContent = t[`usage.${key}.desc`];
-        }
-      });
-
-      // 翻译 API 文档
-      const apiSection = document.getElementById('api');
-      if (apiSection) {
-        const apiTitle = apiSection.querySelector('.section-title');
-        const apiSubtitle = apiSection.querySelector('.section-subtitle');
-        if (apiTitle) apiTitle.textContent = t['api.title'];
-        if (apiSubtitle) apiSubtitle.textContent = t['api.subtitle'];
-      }
-
-      // 翻译页脚
-      document.querySelectorAll('.footer-links a[href="#"]').forEach((el, i) => {
-        const keys = ['docs', 'examples', 'issues'];
-        if (keys[i] && t[`footer.${keys[i]}`]) {
-          el.textContent = t[`footer.${keys[i]}`];
-        }
-      });
-    }
-
     // 初始化语言
     function initLanguage() {
       const savedLang = localStorage.getItem('ai-robot-lang') || 'zh';
@@ -1490,6 +1487,31 @@
 
     // 初始化
     initLanguage();
+
+    // 简化的翻译应用函数 - 使用 data-i18n 属性
+    function applyTranslations(lang) {
+      const t = translations[lang];
+      if (!t) return;
+
+      // 翻译所有带 data-i18n 属性的元素
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+          el.innerHTML = t[key];
+        }
+      });
+
+      // 翻译 placeholder
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) {
+          el.setAttribute('placeholder', t[key]);
+        }
+      });
+
+      // 更新 html lang 属性
+      document.documentElement.lang = lang;
+    }
 
     // API 配置状态
     let isMockMode = true;
