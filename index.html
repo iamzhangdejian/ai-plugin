@@ -1469,6 +1469,9 @@
 
       // 保存到 localStorage
       localStorage.setItem('ai-robot-lang', lang);
+
+      // 通知机器人组件更新语言
+      window.dispatchEvent(new CustomEvent('ai-robot-locale-change', { detail: { locale: lang } }));
     }
 
     // 初始化语言

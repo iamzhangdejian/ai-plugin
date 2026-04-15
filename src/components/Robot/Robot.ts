@@ -6,6 +6,7 @@ import { RobotView } from './RobotView';
 import { StateMachine } from '../../core/StateMachine';
 import type { RobotState } from '../../types';
 import { createElement } from '../../utils/dom';
+import { t, loadLocaleFromStorage } from '../../i18n';
 
 export interface RobotOptions {
   theme?: 'blue' | 'green' | 'purple';
@@ -228,9 +229,12 @@ export class Robot {
       wrapper.classList.add('embedded');
     }
 
+    // 加载语言偏好
+    loadLocaleFromStorage();
+
     // 提示气泡
     const hintBubble = createElement('div', 'ai-robot-hint-bubble');
-    hintBubble.textContent = '✨ 点击我开始对话～';
+    hintBubble.textContent = t('robot.hint');
     wrapper.appendChild(hintBubble);
 
     const canvasContainer = createElement('div', 'ai-robot-canvas-container');

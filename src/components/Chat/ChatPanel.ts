@@ -4,6 +4,7 @@
 
 import { marked } from 'marked';
 import { createElement, clearChildren } from '../../utils/dom';
+import { t, loadLocaleFromStorage } from '../../i18n';
 import type { Message } from '../../types';
 
 export interface ChatPanelOptions {
@@ -44,9 +45,10 @@ export class ChatPanel {
 
   constructor(_container: HTMLElement, options: ChatPanelOptions = {}) {
     this.shadow = _container.attachShadow({ mode: 'open' });
+    loadLocaleFromStorage();
     this.options = {
       theme: 'blue',
-      title: 'AI 助手',
+      title: t('robot.title'),
       bubbleMode: false,
       minWidth: 280,
       minHeight: 200,
@@ -387,7 +389,7 @@ export class ChatPanel {
       }
 
       .chat-messages:empty::before {
-        content: '✨ 开始和 AI 助手对话吧～';
+        content: '${t('chat.emptyHint').replace(/'/g, "\\'")}';
         color: var(--chat-text-light);
         text-align: center;
         padding: 40px 20px;
@@ -797,7 +799,7 @@ export class ChatPanel {
 
     this.inputElement = createElement('input', 'chat-input');
     this.inputElement.type = 'text';
-    this.inputElement.placeholder = '输入消息...';
+    this.inputElement.placeholder = t('chat.placeholder');
 
     // 科技感话筒图标 SVG
     const microphoneIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`;
@@ -1235,6 +1237,36 @@ export class ChatPanel {
     const oldStyle = this.shadow.querySelector('style');
     oldStyle?.remove();
     this.createStyles();
+  }
+
+  /**
+   * 更新语言
+   */
+  updateLocale(locale: 'zh' | 'en'): void {
+    // 更新标题
+    const titleEl = this.shadow.querySelector('.chat-title span');
+    if (titleEl) {
+      titleEl.textContent = locale === 'zh' ? 'AI 助手' : 'AI Assistant';
+    }
+
+    // 更新输入框 placeholder
+    if (this.inputElement) {
+      this.inputElement.placeholder = locale === 'zh' ? '输入消息...' : 'Type a message...';
+    }
+
+    // 更新空状态提示（需要重新创建样式）
+    const styleEl = this.shadow.querySelector('style');
+    if (styleEl) {
+      const emptyHint = locale === 'zh' ? '✨ 开始和 AI 助手对话吧～' : '✨ Start chatting with AI assistant~';
+      // 查找并更新 CSS 中的 content
+      const css = styleEl.textContent;
+      if (css) {
+        styleEl.textContent = css.replace(
+          /content:\s*'[^']+'\s*;/g,
+          `content: '${emptyHint.replace(/'/g, "\\'")}';`
+        );
+      }
+    }
   }
 
   /**

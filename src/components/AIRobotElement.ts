@@ -11,6 +11,7 @@ import type { AIRobotConfig, Message, RobotState } from '../types';
 import type { RobotTheme } from '../types';
 import { createElement } from '../utils/dom';
 import type { AIRobotAPI } from '../types/api';
+import { loadLocaleFromStorage, onLocaleChange } from '../i18n';
 
 export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private shadow!: ShadowRoot;
@@ -252,6 +253,23 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
       title: 'AI 助手',
       bubbleMode: true,
     });
+
+    // 加载语言偏好
+    loadLocaleFromStorage();
+
+    // 监听语言变化（通过 i18n 模块）
+    onLocaleChange((locale) => {
+      console.log('[AIRobotElement] Locale changed to:', locale);
+      // 更新 ChatPanel 翻译
+      this.chatPanel.updateLocale(locale);
+    });
+
+    // 监听页面级别的语言切换事件
+    window.addEventListener('ai-robot-locale-change', ((e: Event) => {
+      const locale = (e as CustomEvent<{ locale: 'zh' | 'en' }>).detail.locale;
+      console.log('[AIRobotElement] Received locale change event:', locale);
+      this.chatPanel.updateLocale(locale);
+    }) as EventListener);
 
     this.chatPanel.setCallbacks({
       onSend: (message) => this.sendMessage(message),
