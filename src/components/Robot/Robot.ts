@@ -139,7 +139,6 @@ export class Robot {
         -webkit-user-select: none;
         z-index: 999999;
         overflow: visible;
-        border: 2px solid rgba(0, 255, 0, 0.5);
       }
 
       .ai-robot-wrapper.embedded {
@@ -154,7 +153,6 @@ export class Robot {
         user-select: none;
         -webkit-user-select: none;
         z-index: 999999;
-        border: 2px solid rgba(0, 255, 0, 0.5);
       }
 
       .ai-robot-wrapper:active {
@@ -180,7 +178,6 @@ export class Robot {
         overflow: visible;
         transform-origin: center center;
         background: transparent;
-        border: 2px dashed rgba(255, 0, 0, 0.5);
       }
 
       .ai-robot-canvas-container canvas {
