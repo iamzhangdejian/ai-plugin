@@ -122,9 +122,10 @@ export class Robot3D {
     this.createLegs();
 
     // 计算机器人中心点并调整整体位置
-    // 根据边界计算：中心点 Y=0.255，需要向下移动使中心对准原点
-    // 目标：center.y = 0，所以 position.y = -0.255 - 0.6 = -0.855
-    this.robot.position.y = -0.855;
+    // 根据边界计算：中心点 Y=0（已居中）
+    // 但由于机器人视觉重心偏高（头部较大），需要再向下移动使视觉上居中
+    // 额外向下移动 0.2 单位
+    this.robot.position.y = -0.855 - 0.2;
 
     // 调试：输出机器人边界
     const box = new THREE.Box3().setFromObject(this.robot);
