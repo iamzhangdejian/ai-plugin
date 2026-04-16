@@ -599,7 +599,7 @@ body {
   inset: 2px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 30px;
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -643,7 +643,7 @@ body {
   filter: blur(20px);
   animation: floatOrb 8s ease-in-out infinite;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 
 .robot-showcase .glow-orb:nth-child(1) {
@@ -700,6 +700,14 @@ body {
 
 /* 增强机器人容器的视觉层次 */
 #hero-robot-container {
+  width: 270px;
+  height: 270px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
   filter: drop-shadow(0 0 30px rgba(102, 126, 234, 0.3));
   animation: robotGlow 3s ease-in-out infinite;
 }
@@ -713,28 +721,19 @@ body {
   }
 }
 
+#hero-robot-container ai-robot {
+  display: block;
+  width: 270px;
+  height: 270px;
+}
+
 .robot-hint {
   color: var(--text-secondary);
   font-size: 1rem;
   text-align: center;
   line-height: 1.6;
-}
-
-#hero-robot-container {
-  width: 270px;
-  height: 270px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
   position: relative;
-}
-
-#hero-robot-container ai-robot {
-  display: block;
-  width: 270px;
-  height: 270px;
+  z-index: 10;
 }
 
 /* ==================== Features Section ==================== */
