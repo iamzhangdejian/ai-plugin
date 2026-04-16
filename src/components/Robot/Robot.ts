@@ -242,11 +242,12 @@ export class Robot {
       .ai-robot-wrapper.robot-glow::before {
         content: '';
         position: absolute;
+        /* 调整位置以匹配机器人本体的视觉中心 */
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 140%;
-        height: 140%;
+        width: 120%;
+        height: 120%;
         border-radius: 50%;
         border: 3px solid rgba(102, 126, 234, 0.6);
         box-shadow: 0 0 20px rgba(102, 126, 234, 0.4),
@@ -263,12 +264,18 @@ export class Robot {
           height: 100%;
           opacity: 1;
           border-width: 4px;
+          box-shadow: 0 0 20px rgba(102, 126, 234, 0.6),
+                      0 0 40px rgba(102, 126, 234, 0.4),
+                      inset 0 0 20px rgba(102, 126, 234, 0.2);
         }
         100% {
-          width: 180%;
-          height: 180%;
+          width: 200%;
+          height: 200%;
           opacity: 0;
-          border-width: 1px;
+          border-width: 0px;
+          box-shadow: 0 0 0 rgba(102, 126, 234, 0),
+                      0 0 0 rgba(102, 126, 234, 0),
+                      inset 0 0 0 rgba(102, 126, 234, 0);
         }
       }
     `;
