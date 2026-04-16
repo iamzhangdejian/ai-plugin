@@ -124,9 +124,9 @@ export class Robot3D {
     // 将机器人添加到场景
     this.scene.add(this.robot);
 
-    // 调试：输出机器人边界
+    // 调试：输出机器人边界（应用偏移前的原始数据）
     const box = new THREE.Box3().setFromObject(this.robot);
-    console.log('[Robot3D] Robot bounds:', {
+    console.log('[Robot3D] Robot bounds (before offset):', {
       min: box.min,
       max: box.max,
       size: new THREE.Vector3().subVectors(box.max, box.min),
@@ -587,7 +587,8 @@ export class Robot3D {
     this.time += 0.016 * this.options.animationSpeed;
 
     // 基础偏移量 - 使机器人视觉居中
-    const baseOffsetY = -0.95;
+    // 待调整：当前 -0.95 仍偏下，需要更精确计算
+    const baseOffsetY = -0.85;
 
     // 待机动画 - 柔和浮动
     if (this.currentState === 'idle') {
@@ -666,6 +667,17 @@ export class Robot3D {
 
     // 更新发光效果
     this.updateGlowEffects();
+
+    // 每 60 帧输出一次应用偏移后的边界（用于调试）
+    if (Math.floor(this.time * 60) % 60 === 0) {
+      const appliedBox = new THREE.Box3().setFromObject(this.robot);
+      console.log('[Robot3D] Robot bounds (with offset):', {
+        min: appliedBox.min,
+        max: appliedBox.max,
+        size: new THREE.Vector3().subVectors(appliedBox.max, appliedBox.min),
+        center: new THREE.Vector3().addVectors(appliedBox.min, appliedBox.max).multiplyScalar(0.5)
+      });
+    }
 
     this.renderer.render(this.scene, this.camera);
   };
