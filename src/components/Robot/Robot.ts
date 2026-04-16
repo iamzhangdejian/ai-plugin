@@ -178,6 +178,7 @@ export class Robot {
         overflow: visible;
         transform-origin: center center;
         background: transparent;
+        border: 2px dashed rgba(255, 0, 0, 0.5);
       }
 
       .ai-robot-canvas-container canvas {
