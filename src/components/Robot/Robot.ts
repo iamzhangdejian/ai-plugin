@@ -252,11 +252,15 @@ export class Robot {
    */
   private bindEvents(): void {
     const wrapper = this.shadow.querySelector('.ai-robot-wrapper')! as HTMLElement;
+    let wasEmbedded = false;
 
     wrapper.addEventListener('pointerdown', ((e: PointerEvent) => {
       e.preventDefault();
       this.isDragging = true;
       this.hasMoved = false;
+
+      // 检查是否是 embedded 模式，如果是需要在拖拽时切换为 fixed 定位
+      wasEmbedded = wrapper.classList.contains('embedded');
 
       // 记录初始位置
       this.startPos = { x: e.clientX, y: e.clientY };
@@ -271,6 +275,15 @@ export class Robot {
       // 移除动画，确保拖拽流畅
       wrapper.style.transition = 'none';
       wrapper.classList.add('dragging');
+
+      // Embedded 模式下需要临时切换为 fixed 定位以支持拖拽
+      if (wasEmbedded) {
+        wrapper.style.position = 'fixed';
+        wrapper.style.left = rect.left + 'px';
+        wrapper.style.top = rect.top + 'px';
+        // 重新记录当前位置，因为刚刚已经设置过了
+        this.currentPos = { x: rect.left, y: rect.top };
+      }
 
       this.stateMachine.setState('dragging');
       this.dispatch('dragStart');
@@ -291,7 +304,7 @@ export class Robot {
 
       // 实时更新位置 - 直接跟随鼠标
       const newX = this.currentPos.x + dx;
-      const newY = this.currentPos.y + dy + window.scrollY;
+      const newY = this.currentPos.y + dy;
 
       // 边界检查 - 限制在视口内，确保机器人整体不超出屏幕边缘
       const wrapperSize = this.options.embedded ? 270 : 180;
