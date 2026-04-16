@@ -53,7 +53,7 @@ export class ChatPanel {
       minWidth: 280,
       minHeight: 200,
       initialWidth: 400,
-      initialHeight: 550,
+      initialHeight: 480,
       ...options,
     };
 
@@ -111,7 +111,7 @@ export class ChatPanel {
         bottom: calc(160px + 16px);
         right: 0;
         width: 360px;
-        max-height: 700px;
+        max-height: 900px;
         background: var(--chat-bg);
         border-radius: 24px;
         box-shadow: var(--chat-shadow);
