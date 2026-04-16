@@ -276,9 +276,9 @@ export class Robot {
       wrapper.style.transition = 'none';
       wrapper.classList.add('dragging');
 
-      // Embedded 模式下需要临时切换为 fixed 定位以支持拖拽
+      // Embedded 模式下需要临时切换为 fixed 定位以支持拖拽（覆盖 CSS !important）
       if (wasEmbedded) {
-        wrapper.style.position = 'fixed';
+        wrapper.style.setProperty('position', 'fixed', 'important');
         wrapper.style.left = rect.left + 'px';
         wrapper.style.top = rect.top + 'px';
         // 重新记录当前位置，因为刚刚已经设置过了
@@ -468,6 +468,13 @@ export class Robot {
    */
   setPosition(x: number, y: number): void {
     const wrapper = this.shadow.querySelector('.ai-robot-wrapper')! as HTMLElement;
+    const isEmbedded = wrapper.classList.contains('embedded');
+
+    // Embedded 模式下需要设置为 fixed 定位以支持位置设置（覆盖 CSS !important）
+    if (isEmbedded) {
+      wrapper.style.setProperty('position', 'fixed', 'important');
+    }
+
     wrapper.style.left = x + 'px';
     wrapper.style.top = y + 'px';
     wrapper.style.right = 'auto';
