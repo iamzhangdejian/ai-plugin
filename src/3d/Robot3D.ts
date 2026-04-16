@@ -81,9 +81,12 @@ export class Robot3D {
 
     console.log('[Robot3D] Renderer created, canvas size:', this.renderer.domElement.width, 'x', this.renderer.domElement.height);
 
-    // 设置 Canvas 样式确保透明
+    // 设置 Canvas 样式确保透明，并添加调试边框
     this.renderer.domElement.style.background = 'transparent';
-    this.renderer.domElement.style.border = 'none';
+    this.renderer.domElement.style.border = '1px solid rgba(0, 0, 255, 0.3)';
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.top = '0';
+    this.renderer.domElement.style.left = '0';
 
     this.robot = new THREE.Group();
     this.createRobot();
