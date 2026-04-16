@@ -121,11 +121,8 @@ export class Robot3D {
     // 创建腿部
     this.createLegs();
 
-    // 计算机器人中心点并调整整体位置
-    // 根据边界计算：中心点 Y=0（已居中）
-    // 但由于机器人视觉重心偏高（头部较大），需要再向下移动使视觉上居中
-    // 额外向下移动 0.2 单位
-    this.robot.position.y = -0.855 - 0.2;
+    // 将机器人添加到场景
+    this.scene.add(this.robot);
 
     // 调试：输出机器人边界
     const box = new THREE.Box3().setFromObject(this.robot);
@@ -589,10 +586,13 @@ export class Robot3D {
 
     this.time += 0.016 * this.options.animationSpeed;
 
+    // 基础偏移量 - 使机器人视觉居中
+    const baseOffsetY = -1.055;
+
     // 待机动画 - 柔和浮动
     if (this.currentState === 'idle') {
-      // 整体上下浮动 - 更柔和
-      this.robot.position.y = Math.sin(this.time * 1.5) * 0.025;
+      // 整体上下浮动 - 更柔和（在基础偏移上叠加）
+      this.robot.position.y = baseOffsetY + Math.sin(this.time * 1.5) * 0.025;
       // 身体轻微左右摇摆
       this.robot.rotation.y = Math.sin(this.time * 0.6) * 0.05;
       // 身体轻微倾斜
@@ -617,6 +617,8 @@ export class Robot3D {
 
     // 拖拽状态 - 晕眩效果
     if (this.currentState === 'dragging') {
+      // 保持基础偏移
+      this.robot.position.y = baseOffsetY;
       this.robot.rotation.z = Math.sin(this.time * 8) * 0.03;
       // 眼睛旋转
       if (this.head) {
@@ -626,6 +628,8 @@ export class Robot3D {
 
     // 思考状态 - 手托下巴
     if (this.currentState === 'thinking') {
+      // 保持基础偏移
+      this.robot.position.y = baseOffsetY;
       if (this.head) {
         this.head.rotation.x = Math.sin(this.time * 0.4) * 0.08;
         this.head.rotation.z = Math.cos(this.time * 0.3) * 0.04;
@@ -638,6 +642,8 @@ export class Robot3D {
 
     // 说话状态 - 兴奋摆动
     if (this.currentState === 'speaking') {
+      // 保持基础偏移
+      this.robot.position.y = baseOffsetY;
       this.robot.rotation.z = Math.sin(this.time * 6) * 0.025;
       if (this.leftArm) {
         this.leftArm.rotation.x = Math.sin(this.time * 5) * 0.15;
@@ -653,6 +659,8 @@ export class Robot3D {
 
     // 监听状态 - 前倾专注
     if (this.currentState === 'listening') {
+      // 保持基础偏移
+      this.robot.position.y = baseOffsetY;
       this.robot.rotation.x = Math.sin(this.time * 0.25) * 0.04;
     }
 
