@@ -747,8 +747,10 @@ body {
 
 #hero-robot-container ai-robot {
   display: block;
-  width: 270px;
-  height: 270px;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .robot-hint {
