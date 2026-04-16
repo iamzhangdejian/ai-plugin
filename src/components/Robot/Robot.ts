@@ -111,7 +111,11 @@ export class Robot {
         width: 270px;
         height: 270px;
         cursor: pointer;
-        z-index: auto;
+        z-index: 100;
+        pointer-events: auto;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       .ai-robot-wrapper:active {

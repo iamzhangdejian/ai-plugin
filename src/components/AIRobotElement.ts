@@ -132,8 +132,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private createShadow(): void {
     this.shadow = this.attachShadow({ mode: 'open' });
 
-    const isEmbedded = this.hasAttribute('embedded');
-
     // 机器人容器
     const robotContainer = createElement('div', 'robot-container');
     robotContainer.style.cssText = `
@@ -146,11 +144,12 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     `;
     this.shadow.appendChild(robotContainer);
 
-    // 对话框容器 - 与机器人同级，固定在 shadow DOM 中
+    // 对话框容器 - 与机器人同级，使用 fixed 定位确保相对于视口
+    // 即使在 embedded 模式下也需要 fixed，因为 ChatPanel 内部使用视口坐标计算位置
     const chatContainer = createElement('div', 'chat-container');
     chatContainer.style.cssText = `
       all: initial;
-      position: ${isEmbedded ? 'absolute' : 'fixed'};
+      position: fixed;
       z-index: 1000000;
       pointer-events: none;
       left: 0;
