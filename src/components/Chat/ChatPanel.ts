@@ -52,8 +52,8 @@ export class ChatPanel {
       bubbleMode: false,
       minWidth: 280,
       minHeight: 200,
-      initialWidth: 380,
-      initialHeight: 450,
+      initialWidth: 400,
+      initialHeight: 550,
       ...options,
     };
 
@@ -111,7 +111,7 @@ export class ChatPanel {
         bottom: calc(160px + 16px);
         right: 0;
         width: 360px;
-        max-height: 500px;
+        max-height: 700px;
         background: var(--chat-bg);
         border-radius: 24px;
         box-shadow: var(--chat-shadow);
@@ -662,7 +662,7 @@ export class ChatPanel {
       @media (max-width: 480px) {
         .chat-panel {
           width: 280px;
-          max-height: 400px;
+          max-height: 600px;
         }
 
         .chat-panel.bubble-mode {
