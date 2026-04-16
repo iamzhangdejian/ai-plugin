@@ -587,7 +587,7 @@ export class Robot3D {
     this.time += 0.016 * this.options.animationSpeed;
 
     // 基础偏移量 - 使机器人视觉居中
-    const baseOffsetY = -1.055;
+    const baseOffsetY = -0.95;
 
     // 待机动画 - 柔和浮动
     if (this.currentState === 'idle') {
