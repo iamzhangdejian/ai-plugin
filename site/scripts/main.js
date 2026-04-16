@@ -124,7 +124,7 @@ const translations = {
     'footer.docs': '文档',
     'footer.examples': '示例',
     'footer.issues': 'Issues',
-    'footer.copyright': '© 2025 AI Robot Assistant. MIT License'
+    'footer.copyright': '© 2026 AI Robot Assistant. MIT License'
   },
   en: {
     'nav.home': 'Home',
@@ -213,7 +213,7 @@ const translations = {
     'footer.docs': 'Docs',
     'footer.examples': 'Examples',
     'footer.issues': 'Issues',
-    'footer.copyright': '© 2025 AI Robot Assistant. MIT License'
+    'footer.copyright': '© 2026 AI Robot Assistant. MIT License'
   }
 };
 
