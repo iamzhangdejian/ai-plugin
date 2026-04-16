@@ -237,6 +237,40 @@ export class Robot {
         opacity: 1;
         top: -100px;
       }
+
+      /* 机器人发光圈效果 - 围绕机器人的光环 */
+      .ai-robot-wrapper.robot-glow::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 140%;
+        height: 140%;
+        border-radius: 50%;
+        border: 3px solid rgba(102, 126, 234, 0.6);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.4),
+                    0 0 40px rgba(102, 126, 234, 0.3),
+                    inset 0 0 20px rgba(102, 126, 234, 0.2);
+        animation: robotGlowRing 1.5s ease-out forwards;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      @keyframes robotGlowRing {
+        0% {
+          width: 100%;
+          height: 100%;
+          opacity: 1;
+          border-width: 4px;
+        }
+        100% {
+          width: 180%;
+          height: 180%;
+          opacity: 0;
+          border-width: 1px;
+        }
+      }
     `;
 
     // 对于 embedded 模式，样式添加到 document head；否则添加到 Shadow DOM
@@ -574,7 +608,16 @@ export class Robot {
       hintBubble.classList.add('visible');
     }
 
-    // 移除旋转和发光特效，只保留气泡效果
+    // 添加发光圈特效
+    if (wrapper) {
+      wrapper.classList.add('robot-glow');
+    }
+
+    setTimeout(() => {
+      if (wrapper) {
+        wrapper.classList.remove('robot-glow');
+      }
+    }, 1500);
 
     setTimeout(() => {
       if (hintBubble) {
