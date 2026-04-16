@@ -67,9 +67,8 @@ export class Robot3D {
     const aspect = container.clientWidth / container.clientHeight;
     console.log('[Robot3D] Camera aspect:', aspect, 'container size:', container.clientWidth, 'x', container.clientHeight);
     this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
-    // 调整相机位置：向上移动并稍微远离，让机器人整体居中
-    this.camera.position.set(0, 0.3, 3.5);
-    this.camera.lookAt(0, 0.15, 0);
+    this.camera.position.set(0, 0, 3.5);
+    this.camera.lookAt(0, 0, 0);
 
     this.renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -118,6 +117,11 @@ export class Robot3D {
 
     // 创建腿部
     this.createLegs();
+
+    // 计算机器人中心点并调整整体位置
+    // 机器人范围：从脚底 y≈-0.3 到头顶 y≈1.57，总高度约 1.87
+    // 中心点约在 y=0.63，需要向下移动使中心对准原点
+    this.robot.position.y = -0.6;
   }
 
   /**
