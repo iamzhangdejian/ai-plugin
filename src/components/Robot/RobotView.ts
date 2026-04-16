@@ -2,7 +2,7 @@
  * RobotView - 机器人视图组件
  */
 
-import { Robot3D } from '../../3d/Robot3D';
+import { Robot3D, RobotSkins, type RobotSkin } from '../../3d/Robot3D';
 import type { RobotState } from '../../types';
 import { toggleClass } from '../../utils/dom';
 
@@ -101,6 +101,22 @@ export class RobotView {
     if (this.robot3D) {
       this.robot3D.setColor(this.getThemeColor());
     }
+  }
+
+  /**
+   * 设置皮肤
+   */
+  setSkin(skin: 'default' | 'blue' | 'green' | 'purple' | 'pink' | 'orange' | 'dark'): void {
+    if (this.robot3D) {
+      this.robot3D.setSkin(skin);
+    }
+  }
+
+  /**
+   * 获取所有皮肤
+   */
+  getSkins(): Record<string, RobotSkin> {
+    return RobotSkins;
   }
 
   /**

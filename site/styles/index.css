@@ -158,17 +158,20 @@ body {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(40, 40, 60, 0.98));
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 16px;
-  padding: 8px;
-  min-width: 160px;
+  padding: 6px;
+  min-width: 140px;
+  width: max-content;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px) scale(0.95);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
   z-index: 1001;
 }
 
@@ -179,9 +182,9 @@ body {
   right: 14px;
   width: 12px;
   height: 12px;
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(40, 40, 60, 0.98));
-  border-left: 1px solid rgba(255, 255, 255, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(229, 231, 235, 0.6);
   transform: rotate(45deg);
 }
 
@@ -194,16 +197,17 @@ body {
 .nav-language-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  color: rgba(255, 255, 255, 0.75);
+  color: #475569;
   font-size: 0.875rem;
   font-weight: 500;
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .nav-language-item::before {
@@ -217,37 +221,38 @@ body {
 }
 
 .nav-language-item:hover {
-  color: white;
-  transform: translateX(4px);
+  color: #1a1a2e;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.05));
+  transform: scale(1.02);
 }
 
 .nav-language-item:hover::before {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1));
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
 }
 
 .nav-language-item.active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.15));
-  color: #a78bfa;
-  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1));
+  color: #667eea;
+  box-shadow: inset 0 0 0 1px rgba(102, 126, 234, 0.2);
 }
 
 .nav-language-item.active::before {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.1));
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
 }
 
 .nav-language-flag {
-  font-size: 1.25rem;
-  filter: grayscale(0.2);
+  font-size: 1.125rem;
+  filter: grayscale(0);
   transition: all 0.2s ease;
 }
 
 .nav-language-item:hover .nav-language-flag {
   filter: grayscale(0);
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
-/* Mock Mode Indicator */
-.mock-indicator {
+/* Settings Button */
+.nav-settings-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -262,28 +267,15 @@ body {
   transition: all 0.3s ease;
 }
 
-.mock-indicator:hover {
+.nav-settings-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
-.mock-indicator.active {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: #34d399;
-  color: #34d399;
-}
-
-.mock-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: mockPulse 2s ease-in-out infinite;
-}
-
-@keyframes mockPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+.nav-settings-btn .nav-settings-icon {
+  width: 16px;
+  height: 16px;
 }
 
 /* ==================== API Config Modal ==================== */
@@ -341,10 +333,103 @@ body {
   font-size: 0.875rem;
 }
 
-.api-config-form {
+/* 模式选择器 */
+.mode-selector {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-option:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.mode-option.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.mode-option[data-mode="mock"].active {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+
+.mode-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.mode-option.active .mode-radio {
+  border-color: #3b82f6;
+  background: #3b82f6;
+}
+
+.mode-option[data-mode="mock"].active .mode-radio {
+  border-color: #10b981;
+  background: #10b981;
+}
+
+.mode-radio-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s ease;
+}
+
+.mode-option.active .mode-radio-inner {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mode-info {
+  flex: 1;
+}
+
+.mode-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.mode-desc {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.api-config-form {
+  display: none;
+  flex-direction: column;
   gap: 24px;
+}
+
+.api-config-form.visible {
+  display: flex;
 }
 
 .form-group {
@@ -569,6 +654,17 @@ body {
   position: relative;
   gap: 20px;
   overflow: visible;
+  padding-bottom: 40px;
+}
+
+/* 机器人展示区域 - 包含机器人和 hint 文本 */
+.robot-display-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ==================== 炫光特效 ==================== */
@@ -770,6 +866,44 @@ ai-robot::part(host) {
   line-height: 1.6;
   position: relative;
   z-index: 10;
+}
+
+/* ==================== Skin Switcher ==================== */
+.skin-switcher {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.skin-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.skin-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.skin-btn.active {
+  transform: scale(1.15);
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
 }
 
 /* ==================== Features Section ==================== */

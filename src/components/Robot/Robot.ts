@@ -194,32 +194,62 @@ export class Robot {
         transform: translateX(-50%);
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 500;
+        padding: 10px 18px;
+        border-radius: 24px;
+        font-size: 0.85rem;
+        font-weight: 600;
         white-space: nowrap;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        box-shadow:
+          0 4px 20px rgba(102, 126, 234, 0.4),
+          0 2px 8px rgba(102, 126, 234, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.3);
         opacity: 0;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         pointer-events: none;
         z-index: 10;
+        letter-spacing: 0.02em;
+      }
+
+      .ai-robot-hint-bubble::before {
+        content: '✨';
+        margin-right: 6px;
+        display: inline-block;
+        animation: sparkle 1.5s ease-in-out infinite;
       }
 
       .ai-robot-hint-bubble::after {
         content: '';
         position: absolute;
-        bottom: -6px;
+        bottom: -8px;
         left: 50%;
         transform: translateX(-50%);
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-top: 6px solid #764ba2;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #764ba2;
+        filter: drop-shadow(0 2px 3px rgba(102, 126, 234, 0.3));
       }
 
       .ai-robot-hint-bubble.visible {
         opacity: 1;
-        top: -15px;
+        top: -20px;
+        animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                   bubbleFloat 0.6s ease-in-out infinite 0.5s;
+      }
+
+      @keyframes bubblePop {
+        0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+        50% { transform: translateX(-50%) scale(1.05); opacity: 1; }
+        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+      }
+
+      @keyframes bubbleFloat {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50% { transform: translateX(-50%) translateY(-4px); }
+      }
+
+      @keyframes sparkle {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.2) rotate(15deg); opacity: 0.8; }
       }
 
       /* 机器人发光圈效果 - 围绕机器人的光环 */
@@ -265,10 +295,22 @@ export class Robot {
 
       /* 可爱的晃动动画 */
       @keyframes hintWiggle {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(-5deg); }
-        50% { transform: rotate(5deg); }
-        75% { transform: rotate(-5deg); }
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        20% { transform: rotate(-6deg) scale(1.05); }
+        40% { transform: rotate(6deg) scale(1.05); }
+        60% { transform: rotate(-4deg) scale(1.02); }
+        80% { transform: rotate(4deg) scale(1.02); }
+      }
+
+      /* 气泡弹出动画 */
+      @keyframes bubblePop {
+        0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+        50% { transform: translateX(-50%) scale(1.05); opacity: 1; }
+        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+      }
+
+      .ai-robot-hint-bubble.visible {
+        animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       }
     `;
 
@@ -499,6 +541,20 @@ export class Robot {
   }
 
   /**
+   * 设置皮肤
+   */
+  setSkin(skin: 'default' | 'blue' | 'green' | 'purple' | 'pink' | 'orange' | 'dark'): void {
+    this.robotView.setSkin(skin);
+  }
+
+  /**
+   * 获取所有皮肤
+   */
+  getSkins(): Record<string, import('../../3d/Robot3D').RobotSkin> {
+    return this.robotView.getSkins();
+  }
+
+  /**
    * 获取 wrapper 元素
    */
   private getWrapper(): HTMLElement {
@@ -597,8 +653,13 @@ export class Robot {
     const hintBubble = wrapper.querySelector('.ai-robot-hint-bubble') as HTMLElement;
 
     if (hintBubble) {
-      // 使用拖拽提示文字
+      // 使用拖拽提示文字（✨ 符号由 CSS ::before 添加）
       hintBubble.textContent = t('robot.dragHint');
+      hintBubble.classList.remove('visible');
+
+      // 触发重绘以重新播放动画
+      void hintBubble.offsetWidth;
+
       hintBubble.classList.add('visible');
 
       // 添加可爱的晃动动画

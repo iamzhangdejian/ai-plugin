@@ -20,7 +20,94 @@ export interface Robot3DOptions {
   eyeColor?: string;
   animationSpeed?: number;
   quality?: 'low' | 'medium' | 'high';
+  skin?: 'default' | 'blue' | 'green' | 'purple' | 'pink' | 'orange' | 'dark';
 }
+
+// 皮肤定义
+export interface RobotSkin {
+  name: string;
+  primaryColor: string;  // 主体颜色（身体、手臂、腿部）
+  secondaryColor?: string;  // 次要颜色（天线杆等）
+  accentColor: string;  // 强调颜色（发光核心、天线顶端）
+  eyeColor: string;  // 眼睛颜色
+  eyeGlowColor?: string;  // 眼睛发光颜色
+  visorColor?: string;  // 面罩颜色
+  label: string;
+  colorBlock: string;
+}
+
+export const RobotSkins: Record<string, RobotSkin> = {
+  default: {
+    name: '默认白',
+    primaryColor: '#FFFFFF',  // 纯白色主体
+    accentColor: '#00D4FF',   // 淡蓝色强调色
+    eyeColor: '#BFDBFE',      // 淡蓝色眼睛
+    eyeGlowColor: '#DBEAFE',  // 柔光效果
+    visorColor: '#0A0A15',    // 黑色面罩
+    label: 'Default',
+    colorBlock: '#FFFFFF',
+  },
+  blue: {
+    name: '科技蓝',
+    primaryColor: '#60A5FA',  // 柔和的天蓝色，降低饱和度
+    accentColor: '#93C5FD',   // 更浅的蓝色作为点缀
+    eyeColor: '#BFDBFE',      // 淡蓝色眼睛，温柔不刺眼
+    eyeGlowColor: '#DBEAFE',  // 柔光效果
+    visorColor: '#1E3A5F',    // 深蓝色面罩，形成对比
+    label: 'Blue',
+    colorBlock: '#60A5FA',
+  },
+  green: {
+    name: '清新绿',
+    primaryColor: '#34D399',  // 清新的薄荷绿
+    accentColor: '#6EE7B7',   // 更浅的薄荷色
+    eyeColor: '#A7F3D0',      // 淡绿色眼睛
+    eyeGlowColor: '#D1FAE5',  // 柔光
+    visorColor: '#064E3B',    // 深绿面罩
+    label: 'Green',
+    colorBlock: '#34D399',
+  },
+  purple: {
+    name: '梦幻紫',
+    primaryColor: '#A78BFA',  // 柔和的薰衣草紫
+    accentColor: '#C4B5FD',   // 更浅的紫罗兰色
+    eyeColor: '#DDD6FE',      // 淡紫色眼睛
+    eyeGlowColor: '#EDE9FE',  // 柔光
+    visorColor: '#5B21B6',    // 深紫面罩
+    label: 'Purple',
+    colorBlock: '#A78BFA',
+  },
+  pink: {
+    name: '樱花粉',
+    primaryColor: '#F472B6',  // 柔和的樱花粉
+    accentColor: '#F9A8D4',   // 更浅的粉色
+    eyeColor: '#FBCFE8',      // 淡粉色眼睛
+    eyeGlowColor: '#FCE7F3',  // 柔光
+    visorColor: '#9D174D',    // 深玫瑰红面罩
+    label: 'Pink',
+    colorBlock: '#F472B6',
+  },
+  orange: {
+    name: '活力橙',
+    primaryColor: '#FB923C',  // 温暖的珊瑚橙
+    accentColor: '#FDBA74',   // 更浅的杏色
+    eyeColor: '#FED7AA',      // 淡橙色眼睛
+    eyeGlowColor: '#FFEDD5',  // 柔光
+    visorColor: '#C2410C',    // 深橙色面罩
+    label: 'Orange',
+    colorBlock: '#FB923C',
+  },
+  dark: {
+    name: '星空黑',
+    primaryColor: '#9CA3AF',  // 优雅的银灰色
+    accentColor: '#D1D5DB',   // 亮银色点缀
+    eyeColor: '#E5E7EB',      // 亮白色眼睛
+    eyeGlowColor: '#F3F4F6',  // 柔光
+    visorColor: '#1F2937',    // 深灰面罩
+    label: 'Dark',
+    colorBlock: '#6B7280',
+  },
+};
 
 /**
  * 3D 人形机器人渲染类 - 大白风格圆润设计
@@ -58,6 +145,7 @@ export class Robot3D {
       eyeColor: '#0F172A', // 深空蓝黑
       animationSpeed: 1,
       quality: 'medium',
+      skin: 'blue',
       ...options,
     };
 
@@ -132,6 +220,7 @@ export class Robot3D {
     });
 
     this.head = new THREE.Mesh(headGeometry, headMaterial);
+    this.head.name = 'mainHead';
     // 头部位置：在身体正上方
     this.head.position.y = 1.1;
     this.robot.add(this.head);
@@ -147,6 +236,7 @@ export class Robot3D {
     });
 
     const visor = new THREE.Mesh(visorGeometry, visorMaterial);
+    visor.name = 'faceVisor';
     visor.position.set(0, -0.05, 0.25);
     visor.scale.set(1, 0.6, 0.2);
     this.head.add(visor);
@@ -201,12 +291,14 @@ export class Robot3D {
     irisGeometry.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.5, 0.5));
 
     const leftIris = new THREE.Mesh(irisGeometry, irisMaterial);
+    leftIris.name = 'eyeIris';
     leftIris.position.z = 0.02;
     leftIris.renderOrder = 3;
     leftEyeGroup.add(leftIris);
     this.eyes.push({ group: leftEyeGroup, iris: leftIris, base: leftBase });
 
     const rightIris = new THREE.Mesh(irisGeometry, irisMaterial);
+    rightIris.name = 'eyeIris';
     rightIris.position.z = 0.02;
     rightIris.renderOrder = 3;
     rightEyeGroup.add(rightIris);
@@ -255,11 +347,13 @@ export class Robot3D {
     });
 
     const leftGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+    leftGlow.name = 'eyeGlow';
     leftGlow.position.z = -0.005;
     leftGlow.renderOrder = 1;
     leftEyeGroup.add(leftGlow);
 
     const rightGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+    rightGlow.name = 'eyeGlow';
     rightGlow.position.z = -0.005;
     rightGlow.renderOrder = 1;
     rightEyeGroup.add(rightGlow);
@@ -322,6 +416,7 @@ export class Robot3D {
     });
 
     const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+    ball.name = 'accentAntenna';
     ball.position.set(0, 0.06, 0);
     antenna.add(ball);
   }
@@ -341,6 +436,7 @@ export class Robot3D {
     });
 
     this.body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    this.body.name = 'mainBody';
     this.body.position.y = 0.55;
     this.robot.add(this.body);
 
@@ -353,6 +449,7 @@ export class Robot3D {
     });
 
     const core = new THREE.Mesh(coreGeometry, coreMaterial);
+    core.name = 'accentCore';
     core.position.set(0, 0.05, 0.24);
     this.body.add(core);
 
@@ -365,6 +462,7 @@ export class Robot3D {
     });
 
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.name = 'accentRing';
     ring.position.set(0, 0.05, 0.245);
     this.body.add(ring);
 
@@ -408,6 +506,7 @@ export class Robot3D {
     // 上臂
     const upperArmGeometry = new THREE.CapsuleGeometry(0.065, 0.25, 16, 24);
     const leftUpperArm = new THREE.Mesh(upperArmGeometry, armMaterial);
+    leftUpperArm.name = 'mainArm';
     leftUpperArm.rotation.z = Math.PI / 12;
     leftUpperArm.position.y = -0.08;
     this.leftArm.add(leftUpperArm);
@@ -421,6 +520,7 @@ export class Robot3D {
     // 前臂
     const forearmGeometry = new THREE.CapsuleGeometry(0.055, 0.2, 16, 24);
     const forearm = new THREE.Mesh(forearmGeometry, armMaterial);
+    forearm.name = 'mainArm';
     forearm.position.y = -0.28;
     forearm.rotation.z = -Math.PI / 24;
     this.leftArm.add(forearm);
@@ -428,6 +528,7 @@ export class Robot3D {
     // 手部 - 球形
     const handGeometry = new THREE.SphereGeometry(0.07, 20, 20);
     const hand = new THREE.Mesh(handGeometry, armMaterial);
+    hand.name = 'mainArm';
     hand.position.set(0, -0.38, 0.02);
     this.leftArm.add(hand);
 
@@ -438,6 +539,7 @@ export class Robot3D {
     this.rightArm.position.set(0.35, 0.75, 0);
 
     const rightUpperArm = new THREE.Mesh(upperArmGeometry, armMaterial);
+    rightUpperArm.name = 'mainArm';
     rightUpperArm.rotation.z = -Math.PI / 12;
     rightUpperArm.position.y = -0.08;
     this.rightArm.add(rightUpperArm);
@@ -447,11 +549,13 @@ export class Robot3D {
     this.rightArm.add(rightElbow);
 
     const rightForearm = new THREE.Mesh(forearmGeometry, armMaterial);
+    rightForearm.name = 'mainArm';
     rightForearm.position.y = -0.28;
     rightForearm.rotation.z = Math.PI / 24;
     this.rightArm.add(rightForearm);
 
     const rightHand = new THREE.Mesh(handGeometry, armMaterial);
+    rightHand.name = 'mainArm';
     rightHand.position.set(0, -0.38, 0.02);
     this.rightArm.add(rightHand);
 
@@ -486,6 +590,7 @@ export class Robot3D {
     // 大腿
     const upperLegGeometry = new THREE.CapsuleGeometry(0.08, 0.3, 16, 24);
     const leftUpperLeg = new THREE.Mesh(upperLegGeometry, legMaterial);
+    leftUpperLeg.name = 'mainLeg';
     leftUpperLeg.position.y = -0.12;
     this.leftLeg.add(leftUpperLeg);
 
@@ -498,6 +603,7 @@ export class Robot3D {
     // 小腿
     const lowerLegGeometry = new THREE.CapsuleGeometry(0.07, 0.28, 16, 24);
     const lowerLeg = new THREE.Mesh(lowerLegGeometry, legMaterial);
+    lowerLeg.name = 'mainLeg';
     lowerLeg.position.y = -0.38;
     this.leftLeg.add(lowerLeg);
 
@@ -505,6 +611,7 @@ export class Robot3D {
     const footGeometry = new THREE.SphereGeometry(0.085, 24, 24);
     footGeometry.applyMatrix4(new THREE.Matrix4().makeScale(1.2, 0.7, 1.6));
     const foot = new THREE.Mesh(footGeometry, legMaterial);
+    foot.name = 'mainLeg';
     foot.position.set(0, -0.52, 0.08);
     this.leftLeg.add(foot);
 
@@ -515,6 +622,7 @@ export class Robot3D {
     this.rightLeg.position.set(0.12, 0.3, 0);
 
     const rightUpperLeg = new THREE.Mesh(upperLegGeometry, legMaterial);
+    rightUpperLeg.name = 'mainLeg';
     rightUpperLeg.position.y = -0.12;
     this.rightLeg.add(rightUpperLeg);
 
@@ -523,10 +631,12 @@ export class Robot3D {
     this.rightLeg.add(rightKnee);
 
     const rightLowerLeg = new THREE.Mesh(lowerLegGeometry, legMaterial);
+    rightLowerLeg.name = 'mainLeg';
     rightLowerLeg.position.y = -0.38;
     this.rightLeg.add(rightLowerLeg);
 
     const rightFoot = new THREE.Mesh(footGeometry, legMaterial);
+    rightFoot.name = 'mainLeg';
     rightFoot.position.set(0, -0.52, 0.08);
     this.rightLeg.add(rightFoot);
 
@@ -821,6 +931,95 @@ export class Robot3D {
     }
 
     this.options.color = color;
+  }
+
+  /**
+   * 设置皮肤
+   */
+  setSkin(skin: 'default' | 'blue' | 'green' | 'purple' | 'pink' | 'orange' | 'dark'): void {
+    console.log('[Robot3D] setSkin called:', skin);
+    const skinData = RobotSkins[skin];
+    if (!skinData) {
+      console.log('[Robot3D] Skin data not found for:', skin);
+      return;
+    }
+    console.log('[Robot3D] Skin data:', skinData);
+
+    this.options.skin = skin;
+    this.options.color = skinData.primaryColor;
+    this.options.eyeColor = skinData.eyeColor;
+
+    const accentColor = new THREE.Color(skinData.accentColor);
+    const eyeColor = new THREE.Color(skinData.eyeColor);
+    const eyeGlowColor = new THREE.Color(skinData.eyeGlowColor || skinData.primaryColor);
+    const visorColor = new THREE.Color(skinData.visorColor || '#0A0A15');
+
+    // 遍历机器人所有子对象，更新强调色部件
+    let updatedCount = 0;
+    let foundParts: string[] = [];
+
+    this.robot.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        if (object.name) {
+          foundParts.push(object.name);
+        }
+
+        const material = object.material as THREE.MeshBasicMaterial | THREE.MeshStandardMaterial;
+
+        // 根据名称更新特定部件
+        if (object.name === 'mainHead' || object.name === 'mainBody' ||
+            object.name === 'mainArm' || object.name === 'mainLeg') {
+          // 更新主体颜色（头部、身体、手臂、腿部）
+          if (material.color) {
+            material.color.set(skinData.primaryColor);
+            material.needsUpdate = true;
+            updatedCount++;
+          }
+        } else if (object.name === 'accentCore' || object.name === 'accentRing' || object.name === 'accentAntenna') {
+          console.log('[Robot3D] Updating accent part:', object.name);
+          if (material.color) {
+            material.color.set(accentColor);
+            material.needsUpdate = true;
+            updatedCount++;
+          }
+          if ('emissive' in material && material.emissive) {
+            material.emissive.set(accentColor);
+            material.needsUpdate = true;
+          }
+        } else if (object.name === 'eyeIris') {
+          console.log('[Robot3D] Updating eyeIris');
+          // 更新虹膜颜色
+          if (material.color) {
+            material.color.set(eyeColor);
+            material.needsUpdate = true;
+            updatedCount++;
+          }
+        } else if (object.name === 'eyeGlow') {
+          console.log('[Robot3D] Updating eyeGlow');
+          // 更新外光晕颜色
+          if (material.color) {
+            material.color.set(eyeGlowColor);
+            material.needsUpdate = true;
+            updatedCount++;
+          }
+        } else if (object.name === 'faceVisor') {
+          console.log('[Robot3D] Updating faceVisor');
+          // 更新面罩颜色
+          if (material.color) {
+            material.color.set(visorColor);
+            material.needsUpdate = true;
+            updatedCount++;
+          }
+          if ('emissive' in material && material.emissive) {
+            material.emissive.set(visorColor);
+            material.needsUpdate = true;
+          }
+        }
+      }
+    });
+
+    console.log('[Robot3D] Found parts:', foundParts);
+    console.log('[Robot3D] Updated', updatedCount, 'parts');
   }
 
   /**

@@ -43,9 +43,12 @@
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
           </svg>
         </a>
-        <button class="mock-indicator" id="mockIndicator" onclick="toggleApiConfig()">
-          <span class="mock-dot"></span>
-          <span data-i18n="nav.mock">Mock 模式</span>
+        <button class="nav-settings-btn" id="navSettings" onclick="toggleSettings()" aria-label="Settings">
+          <svg class="nav-settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <span data-i18n="nav.settings">设置</span>
         </button>
         <!-- 语言切换 -->
         <div class="nav-language" id="navLanguage">
@@ -79,9 +82,33 @@
   <div class="api-config-overlay" id="apiConfigOverlay">
     <div class="api-config-modal">
       <div class="api-config-header">
-        <h3 data-i18n="api.config.title">⚙️ API 配置</h3>
-        <p data-i18n="api.config.desc">配置 AI 后端服务，开启真实对话体验</p>
+        <h3 data-i18n="api.config.title">⚙️ 设置</h3>
+        <p data-i18n="api.config.desc">选择对话模式</p>
       </div>
+
+      <!-- 模式选择 -->
+      <div class="mode-selector">
+        <div class="mode-option" data-mode="mock" onclick="selectMode('mock')">
+          <div class="mode-radio">
+            <div class="mode-radio-inner"></div>
+          </div>
+          <div class="mode-info">
+            <div class="mode-title" data-i18n="settings.mode.mock">Mock 模式</div>
+            <div class="mode-desc" data-i18n="settings.mode.mock.desc">使用模拟数据，无需 API 配置</div>
+          </div>
+        </div>
+        <div class="mode-option" data-mode="api" onclick="selectMode('api')">
+          <div class="mode-radio">
+            <div class="mode-radio-inner"></div>
+          </div>
+          <div class="mode-info">
+            <div class="mode-title" data-i18n="settings.mode.api">API 模式</div>
+            <div class="mode-desc" data-i18n="settings.mode.api.desc">配置 AI 后端服务，真实对话体验</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API 配置表单 -->
       <form class="api-config-form" id="apiConfigForm" onsubmit="saveApiConfig(event)">
         <div class="form-group">
           <label for="apiKey">
@@ -166,19 +193,33 @@
             <div class="light-beam beam-3"></div>
           </div>
           <!-- 机器人容器 -->
-          <div id="hero-robot-container">
-            <ai-robot
-              id="robot"
-              embedded
-              api-key=""
-              api-endpoint=""
-              wake-word="嗨小智"
-              theme="blue"
-              position="right"
-              visible="true"
-            ></ai-robot>
+          <!-- 机器人展示区域 -->
+          <div class="robot-display-area">
+            <!-- 机器人容器 -->
+            <div id="hero-robot-container">
+              <ai-robot
+                id="robot"
+                embedded
+                api-key=""
+                api-endpoint=""
+                wake-word="嗨小智"
+                theme="blue"
+                position="right"
+                visible="true"
+              ></ai-robot>
+            </div>
+            <p class="robot-hint" data-i18n="hero.robot.hint">✨ 戳戳我开始聊天吧～</p>
           </div>
-          <p class="robot-hint" data-i18n="hero.robot.hint">✨ 戳戳我开始聊天吧～</p>
+          <!-- 皮肤切换按钮 -->
+          <div class="skin-switcher">
+            <button class="skin-btn active" data-skin="default" style="background-color: #FFFFFF; border-color: #e5e7eb;" title="默认白"></button>
+            <button class="skin-btn" data-skin="blue" style="background-color: #60A5FA;" title="科技蓝"></button>
+            <button class="skin-btn" data-skin="green" style="background-color: #34D399;" title="清新绿"></button>
+            <button class="skin-btn" data-skin="purple" style="background-color: #A78BFA;" title="梦幻紫"></button>
+            <button class="skin-btn" data-skin="pink" style="background-color: #F472B6;" title="樱花粉"></button>
+            <button class="skin-btn" data-skin="orange" style="background-color: #FB923C;" title="活力橙"></button>
+            <button class="skin-btn" data-skin="dark" style="background-color: #6B7280;" title="星空黑"></button>
+          </div>
         </div>
       </div>
     </div>

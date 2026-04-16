@@ -42,12 +42,16 @@ const translations = {
     'nav.features': '特性',
     'nav.usage': '使用方式',
     'nav.api': 'API 文档',
+    'nav.settings': '设置',
     'lang.current': '中文',
     'lang.zh': '简体中文',
     'lang.en': 'English',
-    'nav.mock': 'Mock 模式',
-    'api.config.title': '⚙️ API 配置',
-    'api.config.desc': '配置 AI 后端服务，开启真实对话体验',
+    'api.config.title': '⚙️ 设置',
+    'api.config.desc': '选择对话模式',
+    'settings.mode.mock': 'Mock 模式',
+    'settings.mode.mock.desc': '使用模拟数据，无需 API 配置',
+    'settings.mode.api': 'API 模式',
+    'settings.mode.api.desc': '配置 AI 后端服务，真实对话体验',
     'form.apiKey.placeholder': '请输入 API Key',
     'form.apiKey.hint': '🔐 您的 API Key 只会存储在本地',
     'form.apiEndpoint.placeholder': 'https://api.example.com/chat',
@@ -131,12 +135,16 @@ const translations = {
     'nav.features': 'Features',
     'nav.usage': 'Usage',
     'nav.api': 'API Docs',
+    'nav.settings': 'Settings',
     'lang.current': 'English',
     'lang.zh': '简体中文',
     'lang.en': 'English',
-    'nav.mock': 'Mock Mode',
-    'api.config.title': '⚙️ API Configuration',
-    'api.config.desc': 'Configure AI backend service for real conversation experience',
+    'api.config.title': '⚙️ Settings',
+    'api.config.desc': 'Select conversation mode',
+    'settings.mode.mock': 'Mock Mode',
+    'settings.mode.mock.desc': 'Use simulated data, no API configuration needed',
+    'settings.mode.api': 'API Mode',
+    'settings.mode.api.desc': 'Configure AI backend service for real conversation',
     'form.apiKey.placeholder': 'Enter API Key',
     'form.apiKey.hint': '🔐 Your API Key is stored locally only',
     'form.apiEndpoint.placeholder': 'https://api.example.com/chat',
@@ -245,21 +253,23 @@ function applyTranslations(lang) {
  * 切换语言
  */
 function switchLanguage(lang) {
+  // 如果语言和当前已保存的不同，则刷新页面
+  const currentLang = localStorage.getItem('ai-robot-lang') || 'zh';
+  if (lang !== currentLang) {
+    localStorage.setItem('ai-robot-lang', lang);
+    // 延迟刷新，让用户看到选中状态变化
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
+    return;
+  }
+
+  // 如果语言相同，只是关闭下拉框
   document.querySelectorAll('.nav-language-item').forEach(item => {
     item.classList.toggle('active', item.dataset.lang === lang);
   });
 
   document.getElementById('navLanguage')?.classList.remove('open');
-
-  const langText = document.querySelector('.nav-language-text');
-  if (langText) {
-    langText.textContent = lang === 'zh' ? '中文' : 'English';
-  }
-
-  applyTranslations(lang);
-  localStorage.setItem('ai-robot-lang', lang);
-
-  window.dispatchEvent(new CustomEvent('ai-robot-locale-change', { detail: { locale: lang } }));
 }
 
 /**
@@ -267,7 +277,20 @@ function switchLanguage(lang) {
  */
 function initLanguage() {
   const savedLang = localStorage.getItem('ai-robot-lang') || 'zh';
-  switchLanguage(savedLang);
+
+  // 设置语言按钮文本
+  const langText = document.querySelector('.nav-language-text');
+  if (langText) {
+    langText.textContent = savedLang === 'zh' ? '中文' : 'English';
+  }
+
+  // 设置下拉框激活状态
+  document.querySelectorAll('.nav-language-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.lang === savedLang);
+  });
+
+  // 应用翻译
+  applyTranslations(savedLang);
 }
 
 /**
@@ -371,37 +394,59 @@ function initApiConfig() {
 }
 
 /**
- * 切换 API 配置弹窗
+ * 切换设置弹窗
  */
-function toggleApiConfig() {
-  if (isMockMode) {
-    openApiConfig();
-  } else {
-    if (confirm('确定要切换回 Mock 模式吗？切换后机器人将使用模拟数据。')) {
-      isMockMode = true;
-      updateMockIndicator();
-      updateRobotConfig();
-      showStatus('已切换回 Mock 模式', 'success');
-    }
-  }
+function toggleSettings() {
+  openSettings();
 }
 
 /**
- * 打开 API 配置弹窗
+ * 打开设置弹窗
  */
-function openApiConfig() {
+function openSettings() {
   const overlay = document.getElementById('apiConfigOverlay');
   const apiKeyInput = document.getElementById('apiKey');
   const apiEndpointInput = document.getElementById('apiEndpoint');
+  const modeOptions = document.querySelectorAll('.mode-option');
+  const apiForm = document.getElementById('apiConfigForm');
 
-  if (apiKeyInput) apiKeyInput.value = apiConfig.apiKey || '';
-  if (apiEndpointInput) apiEndpointInput.value = apiConfig.apiEndpoint || '';
+  // 设置当前模式
+  modeOptions.forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.mode === (isMockMode ? 'mock' : 'api'));
+  });
+
+  // 根据模式显示/隐藏表单
+  if (isMockMode) {
+    apiForm?.classList.remove('visible');
+  } else {
+    apiForm?.classList.add('visible');
+    if (apiKeyInput) apiKeyInput.value = apiConfig.apiKey || '';
+    if (apiEndpointInput) apiEndpointInput.value = apiConfig.apiEndpoint || '';
+  }
 
   overlay?.classList.add('visible');
+}
 
-  setTimeout(() => {
-    apiKeyInput?.focus();
-  }, 100);
+/**
+ * 选择模式
+ */
+function selectMode(mode) {
+  const modeOptions = document.querySelectorAll('.mode-option');
+  const apiForm = document.getElementById('apiConfigForm');
+  const apiKeyInput = document.getElementById('apiKey');
+
+  modeOptions.forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.mode === mode);
+  });
+
+  if (mode === 'mock') {
+    apiForm?.classList.remove('visible');
+  } else {
+    apiForm?.classList.add('visible');
+    setTimeout(() => {
+      apiKeyInput?.focus();
+    }, 100);
+  }
 }
 
 /**
@@ -484,6 +529,8 @@ function setupRobotEvents() {
     console.log('🤖 Robot is ready!');
     // 启动定时互动效果
     startRobotHintInterval();
+    // 初始化皮肤切换器
+    initSkinSwitcher();
   };
 
   // 同时监听两种事件来源
@@ -497,6 +544,7 @@ function setupRobotEvents() {
     setTimeout(() => {
       console.log('🤖 Robot already ready, starting interval...');
       startRobotHintInterval();
+      initSkinSwitcher();
     }, 500);
   }
 
@@ -507,6 +555,68 @@ function setupRobotEvents() {
   robot?.addEventListener('message-received', (e) => {
     console.log('📥 Message received:', e.detail);
   });
+}
+
+/**
+ * 初始化皮肤切换器
+ */
+let currentSkin = 'default';
+function initSkinSwitcher() {
+  const skinBtns = document.querySelectorAll('.skin-btn');
+  const robot = document.getElementById('robot');
+
+  console.log('[SkinSwitcher] Init, robot:', robot);
+  console.log('[SkinSwitcher] robot.setSkin:', robot?.setSkin);
+
+  // 从 localStorage 加载皮肤偏好
+  const savedSkin = localStorage.getItem('ai-robot-skin');
+  const initialSkin = savedSkin || currentSkin;
+
+  // 设置初始激活状态
+  skinBtns.forEach(btn => {
+    if (btn.dataset.skin === initialSkin) {
+      btn.classList.add('active');
+    }
+
+    btn.addEventListener('click', () => {
+      const newSkin = btn.dataset.skin;
+      console.log('[SkinSwitcher] Clicked skin:', newSkin);
+      if (!newSkin || newSkin === currentSkin) {
+        console.log('[SkinSwitcher] Same skin or invalid, skipping');
+        return;
+      }
+
+      // 更新激活状态
+      skinBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // 切换机器人皮肤
+      if (robot && typeof robot.setSkin === 'function') {
+        console.log('[SkinSwitcher] Calling robot.setSkin(', newSkin, ')');
+        robot.setSkin(newSkin);
+      } else {
+        console.log('[SkinSwitcher] robot.setSkin is not a function');
+      }
+
+      currentSkin = newSkin;
+
+      // 保存到 localStorage
+      localStorage.setItem('ai-robot-skin', currentSkin);
+
+      // 触发发光效果
+      if (typeof robot.showHintBubble === 'function') {
+        robot.showHintBubble();
+      }
+    });
+  });
+
+  // 如果从 localStorage 加载了皮肤，应用它
+  if (savedSkin && savedSkin !== currentSkin) {
+    const targetBtn = document.querySelector(`.skin-btn[data-skin="${savedSkin}"]`);
+    if (targetBtn) {
+      targetBtn.click();
+    }
+  }
 }
 
 /**
@@ -604,10 +714,12 @@ function init() {
   });
 
   // 暴露全局函数供 HTML 调用
-  window.toggleLanguageDropdown = toggleLanguageDropdown;
-  window.switchLanguage = switchLanguage;
-  window.toggleApiConfig = toggleApiConfig;
+  window.toggleSettings = toggleSettings;
+  window.selectMode = selectMode;
+  window.closeApiConfig = closeApiConfig;
   window.saveApiConfig = saveApiConfig;
+  window.switchLanguage = switchLanguage;
+  window.toggleLanguageDropdown = toggleLanguageDropdown;
   window.activateRobot = activateRobot;
 }
 

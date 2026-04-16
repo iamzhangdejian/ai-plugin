@@ -16,18 +16,18 @@ export interface TranslationMap {
 const translations: Record<Locale, TranslationMap> = {
   zh: {
     'robot.title': 'AI 助手',
-    'robot.hint': '✨ 戳戳我开始聊天吧～',
-    'robot.dragHint': '💫 我可以自由拖动哦～',
+    'robot.hint': '戳戳我开始聊天吧～',
+    'robot.dragHint': '我可以自由拖动哦～',
     'chat.placeholder': '输入消息...',
-    'chat.emptyHint': '✨ 开始和 AI 助手对话吧～',
+    'chat.emptyHint': '开始和 AI 助手对话吧～',
     'chat.voice.listening': '🔴',
   },
   en: {
     'robot.title': 'AI Assistant',
-    'robot.hint': '✨ Tap me to chat~',
-    'robot.dragHint': '💫 I can be dragged freely~',
+    'robot.hint': 'Tap me to chat~',
+    'robot.dragHint': 'I can be dragged freely~',
     'chat.placeholder': 'Type a message...',
-    'chat.emptyHint': '✨ Start chatting with AI assistant~',
+    'chat.emptyHint': 'Start chatting with AI assistant~',
     'chat.voice.listening': '🔴',
   },
 };

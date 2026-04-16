@@ -547,6 +547,10 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.chatPanel.setTheme(theme);
   }
 
+  setSkin(skin: 'default' | 'blue' | 'green' | 'purple' | 'pink' | 'orange' | 'dark'): void {
+    this.robot.setSkin(skin);
+  }
+
   private dispatch(event: string, detail?: unknown): void {
     const callbacks = this.eventCallbacks.get(event);
     if (callbacks) {
