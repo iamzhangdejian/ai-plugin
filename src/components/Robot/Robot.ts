@@ -201,66 +201,6 @@ export class Robot {
       .ai-robot-wrapper.dragging .ai-robot-canvas-container {
         transform: scale(1.15);
       }
-
-      /* 提示气泡 */
-      .ai-robot-hint-bubble {
-        position: absolute;
-        top: -90px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        white-space: nowrap;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        opacity: 0;
-        transition: all 0.3s ease;
-        pointer-events: none;
-        z-index: 10;
-      }
-
-      .ai-robot-hint-bubble::after {
-        content: '';
-        position: absolute;
-        bottom: -6px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-top: 6px solid #764ba2;
-      }
-
-      .ai-robot-hint-bubble.visible {
-        opacity: 1;
-        top: -100px;
-      }
-
-      /* 机器人跳舞动画 - 使用 wrapper 内部的 canvas-container 来旋转 */
-      .ai-robot-wrapper.robot-dance .ai-robot-canvas-container {
-        animation: robotDanceContainer 0.8s ease-in-out !important;
-        transform: none !important;
-      }
-
-      @keyframes robotDanceContainer {
-        0% { transform: rotate(0deg) scale(1); }
-        25% { transform: rotate(90deg) scale(1.1, 0.9); }
-        50% { transform: rotate(180deg) scale(1); }
-        75% { transform: rotate(270deg) scale(0.9, 1.1); }
-        100% { transform: rotate(360deg) scale(1); }
-      }
-
-      /* 机器人光晕效果 */
-      @keyframes robotGlow {
-        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
-        50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.6); }
-      }
-
-      .ai-robot-wrapper.robot-glow {
-        animation: robotGlow 0.8s ease-in-out;
-      }
     `;
 
     // 对于 embedded 模式，样式添加到 document head；否则添加到 Shadow DOM
@@ -598,17 +538,7 @@ export class Robot {
       hintBubble.classList.add('visible');
     }
 
-    if (wrapper) {
-      wrapper.classList.add('robot-dance');
-      wrapper.classList.add('robot-glow');
-    }
-
-    setTimeout(() => {
-      if (wrapper) {
-        wrapper.classList.remove('robot-dance');
-        wrapper.classList.remove('robot-glow');
-      }
-    }, 800);
+    // 移除旋转和发光效果，避免白色透明区块闪烁
 
     setTimeout(() => {
       if (hintBubble) {
