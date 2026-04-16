@@ -253,23 +253,36 @@ function applyTranslations(lang) {
  * 切换语言
  */
 function switchLanguage(lang) {
-  // 如果语言和当前已保存的不同，则刷新页面
+  // 获取当前语言
   const currentLang = localStorage.getItem('ai-robot-lang') || 'zh';
-  if (lang !== currentLang) {
-    localStorage.setItem('ai-robot-lang', lang);
-    // 延迟刷新，让用户看到选中状态变化
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
+
+  // 如果语言和当前已保存的相同，只关闭下拉框
+  if (lang === currentLang) {
+    document.getElementById('navLanguage')?.classList.remove('open');
     return;
   }
 
-  // 如果语言相同，只是关闭下拉框
+  // 更新激活状态
   document.querySelectorAll('.nav-language-item').forEach(item => {
     item.classList.toggle('active', item.dataset.lang === lang);
   });
 
+  // 关闭下拉框
   document.getElementById('navLanguage')?.classList.remove('open');
+
+  // 更新语言按钮文本
+  const langText = document.querySelector('.nav-language-text');
+  if (langText) {
+    langText.textContent = lang === 'zh' ? '中文' : 'English';
+  }
+
+  // 保存到 localStorage
+  localStorage.setItem('ai-robot-lang', lang);
+
+  // 等待动画完成后刷新页面
+  setTimeout(() => {
+    window.location.reload();
+  }, 250);
 }
 
 /**
