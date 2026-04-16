@@ -752,6 +752,15 @@ body {
   height: 0;
   opacity: 0;
   visibility: hidden;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Shadow DOM 宿主元素样式 */
+ai-robot::part(host) {
+  background: transparent;
+  border: none;
 }
 
 .robot-hint {

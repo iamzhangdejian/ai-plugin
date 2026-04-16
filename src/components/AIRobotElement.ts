@@ -142,6 +142,21 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
     console.log('[AIRobotElement] Creating Shadow DOM, isEmbedded:', isEmbedded);
 
+    // 在 Shadow DOM 内部设置 :host 样式为透明
+    const hostStyle = createElement('style');
+    hostStyle.textContent = `
+      :host {
+        all: initial;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
+    `;
+    this.shadow.appendChild(hostStyle);
+
     // 对话框容器
     const chatContainer = createElement('div', 'chat-container');
     // 对于 embedded 模式，对话框也需要添加到 document.body，使用 fixed 定位
