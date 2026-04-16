@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Robot Assistant - 3D 智能机器人助手</title>
   <link rel="stylesheet" href="/site/styles/index.css">
+  <script>
+    // 页面加载时立即检测是否是刷新
+    (function() {
+      var isRefresh = false;
+      try {
+        if (performance.navigation && performance.navigation.type === 1) {
+          isRefresh = true;
+        } else if (performance.getEntriesByType) {
+          var entries = performance.getEntriesByType('navigation');
+          if (entries.length > 0 && entries[0].type === 'reload') {
+            isRefresh = true;
+          }
+        }
+      } catch (e) {}
+      if (isRefresh) {
+        document.documentElement.setAttribute('data-ai-robot-reset', 'true');
+      }
+    })();
+  </script>
 </head>
 <body>
   <!-- 导航栏 -->

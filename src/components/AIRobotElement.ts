@@ -88,12 +88,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.bindEvents();
     this.initialized = true;
 
-    // 检查是否是页面刷新，清除标记
-    if (document.documentElement.getAttribute('data-ai-robot-reset') === 'true') {
-      console.log('[AIRobotElement] Page refresh completed, position reset');
-      document.documentElement.removeAttribute('data-ai-robot-reset');
-    }
-
     this.dispatch('robot-ready');
     window.dispatchEvent(new CustomEvent('ai-robot-ready', { detail: { robot: this } }));
   }
@@ -215,7 +209,15 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
     // 计算初始位置（白色卡片区域中心）- 在机器人初始化后设置
     if (isEmbedded) {
-      // 页面刷新时总是使用初始位置，不恢复保存的位置
+      // 检查是否是页面刷新
+      const isPageRefresh = document.documentElement.getAttribute('data-ai-robot-reset') === 'true';
+
+      // 页面刷新时清除保存的位置记录
+      if (isPageRefresh) {
+        sessionStorage.removeItem('ai-robot-saved');
+        this.clearSavedPosition();
+      }
+
       // 使用 sessionStorage 标记本次会话是否已保存过位置
       const hasSavedInSession = sessionStorage.getItem('ai-robot-saved');
 
@@ -643,6 +645,11 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
           const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + verticalOffset;
 
           this.robot.setPosition(centerX, centerY);
+
+          // 页面刷新后清除标记
+          if (document.documentElement.getAttribute('data-ai-robot-reset') === 'true') {
+            document.documentElement.removeAttribute('data-ai-robot-reset');
+          }
         }
       });
     });

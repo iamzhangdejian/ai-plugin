@@ -1063,7 +1063,7 @@ export class ChatPanel {
     const viewportHeight = window.innerHeight;
 
     // 气泡偏移量（从机器人的距离）
-    const gap = -60;
+    const gap = -40;
 
     // 机器人宽度和高度
     const robotWidth = robotRect.width;
@@ -1089,12 +1089,12 @@ export class ChatPanel {
     if (spaceOnRight >= panelWidth + gap) {
       // 右侧有足够空间 - 对话框在机器人右侧，箭头向左指向机器人
       targetX = robotRect.right + gap;
-      targetY = robotCenterY - panelHeight / 2 + 20;
+      targetY = robotCenterY - panelHeight / 2 + 150;
       panel.classList.add('arrow-left');
     } else if (spaceOnLeft >= panelWidth + gap) {
       // 左侧有足够空间 - 对话框在机器人左侧，箭头向右指向机器人
       targetX = robotRect.left - panelWidth - gap;
-      targetY = robotCenterY - panelHeight / 2 + 20;
+      targetY = robotCenterY - panelHeight / 2 + 150;
       panel.classList.add('arrow-right');
     } else if (spaceOnBottom >= panelHeight + gap) {
       // 下方有空间 - 对话框在机器人下方，箭头向上指向机器人
@@ -1109,7 +1109,7 @@ export class ChatPanel {
     } else {
       // 默认：放在机器人右侧，箭头向左
       targetX = robotRect.right + gap;
-      targetY = robotCenterY - panelHeight / 2 + 20;
+      targetY = robotCenterY - panelHeight / 2 + 150;
       panel.classList.add('arrow-left');
     }
 
