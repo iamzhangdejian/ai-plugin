@@ -77,6 +77,12 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
     if (this.initialized) return;
 
+    // 对于 embedded 模式，设置宿主元素为透明和零尺寸，避免白色区块闪烁
+    const isEmbedded = this.hasAttribute('embedded');
+    if (isEmbedded) {
+      this.style.cssText = 'width: 0; height: 0; opacity: 0; visibility: hidden; border: none; background: transparent;';
+    }
+
     this.createShadow();
     this.initComponents();
     this.bindEvents();
