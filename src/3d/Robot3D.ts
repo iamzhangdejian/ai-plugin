@@ -122,6 +122,15 @@ export class Robot3D {
     // 机器人范围：从脚底 y≈-0.3 到头顶 y≈1.57，总高度约 1.87
     // 中心点约在 y=0.63，需要向下移动使中心对准原点
     this.robot.position.y = -0.6;
+
+    // 调试：输出机器人边界
+    const box = new THREE.Box3().setFromObject(this.robot);
+    console.log('[Robot3D] Robot bounds:', {
+      min: box.min,
+      max: box.max,
+      size: new THREE.Vector3().subVectors(box.max, box.min),
+      center: new THREE.Vector3().addVectors(box.min, box.max).multiplyScalar(0.5)
+    });
   }
 
   /**
