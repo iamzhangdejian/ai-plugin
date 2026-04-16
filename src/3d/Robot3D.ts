@@ -119,9 +119,9 @@ export class Robot3D {
     this.createLegs();
 
     // 计算机器人中心点并调整整体位置
-    // 机器人范围：从脚底 y≈-0.3 到头顶 y≈1.57，总高度约 1.87
-    // 中心点约在 y=0.63，需要向下移动使中心对准原点
-    this.robot.position.y = -0.6;
+    // 根据边界计算：中心点 Y=0.255，需要向下移动使中心对准原点
+    // 目标：center.y = 0，所以 position.y = -0.255 - 0.6 = -0.855
+    this.robot.position.y = -0.855;
 
     // 调试：输出机器人边界
     const box = new THREE.Box3().setFromObject(this.robot);
