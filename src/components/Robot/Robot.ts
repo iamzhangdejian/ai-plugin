@@ -177,12 +177,14 @@ export class Robot {
         border-radius: 50%;
         overflow: visible;
         transform-origin: center center;
+        background: transparent;
       }
 
       .ai-robot-canvas-container canvas {
         width: 100% !important;
         height: 100% !important;
         display: block;
+        background: transparent;
       }
 
       .ai-robot-wrapper.idle {

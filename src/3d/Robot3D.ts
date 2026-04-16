@@ -72,11 +72,17 @@ export class Robot3D {
     this.renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: this.options.quality !== 'low',
+      premultipliedAlpha: false,
     });
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setClearColor(0x000000, 0); // 完全透明
 
     console.log('[Robot3D] Renderer created, canvas size:', this.renderer.domElement.width, 'x', this.renderer.domElement.height);
+
+    // 设置 Canvas 样式确保透明
+    this.renderer.domElement.style.background = 'transparent';
+    this.renderer.domElement.style.border = 'none';
 
     this.robot = new THREE.Group();
     this.createRobot();

@@ -734,6 +734,7 @@ body {
   position: relative;
   z-index: 1;
   animation: robotPulseGlow 3s ease-in-out infinite;
+  background: transparent;
 }
 
 @keyframes robotPulseGlow {
