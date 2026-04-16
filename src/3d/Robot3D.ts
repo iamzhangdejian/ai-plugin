@@ -67,7 +67,8 @@ export class Robot3D {
     const aspect = container.clientWidth / container.clientHeight;
     console.log('[Robot3D] Camera aspect:', aspect, 'container size:', container.clientWidth, 'x', container.clientHeight);
     this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
-    this.camera.position.set(0, 0, 3.5);
+    // 调整相机距离使机器人填充容器
+    this.camera.position.set(0, 0, 2.0);
     this.camera.lookAt(0, 0, 0);
 
     this.renderer = new THREE.WebGLRenderer({
