@@ -104,18 +104,9 @@ export class Robot {
       }
 
       .ai-robot-wrapper.embedded {
-        position: relative !important;
-        left: auto !important;
-        top: auto !important;
-        transform: none !important;
         width: 270px;
         height: 270px;
         cursor: pointer;
-        z-index: 100;
-        pointer-events: auto;
-        touch-action: none;
-        user-select: none;
-        -webkit-user-select: none;
       }
 
       .ai-robot-wrapper:active {
@@ -256,15 +247,11 @@ export class Robot {
    */
   private bindEvents(): void {
     const wrapper = this.shadow.querySelector('.ai-robot-wrapper')! as HTMLElement;
-    let wasEmbedded = false;
 
     wrapper.addEventListener('pointerdown', ((e: PointerEvent) => {
       e.preventDefault();
       this.isDragging = true;
       this.hasMoved = false;
-
-      // 检查是否是 embedded 模式，如果是需要在拖拽时切换为 fixed 定位
-      wasEmbedded = wrapper.classList.contains('embedded');
 
       // 记录初始位置
       this.startPos = { x: e.clientX, y: e.clientY };
@@ -279,15 +266,6 @@ export class Robot {
       // 移除动画，确保拖拽流畅
       wrapper.style.transition = 'none';
       wrapper.classList.add('dragging');
-
-      // Embedded 模式下需要临时切换为 fixed 定位以支持拖拽（覆盖 CSS !important）
-      if (wasEmbedded) {
-        wrapper.style.setProperty('position', 'fixed', 'important');
-        wrapper.style.left = rect.left + 'px';
-        wrapper.style.top = rect.top + 'px';
-        // 重新记录当前位置，因为刚刚已经设置过了
-        this.currentPos = { x: rect.left, y: rect.top };
-      }
 
       this.stateMachine.setState('dragging');
       this.dispatch('dragStart');
@@ -308,7 +286,7 @@ export class Robot {
 
       // 实时更新位置 - 直接跟随鼠标
       const newX = this.currentPos.x + dx;
-      const newY = this.currentPos.y + dy;
+      const newY = this.currentPos.y + dy + window.scrollY;
 
       // 边界检查 - 限制在视口内，确保机器人整体不超出屏幕边缘
       const wrapperSize = this.options.embedded ? 270 : 180;
@@ -472,13 +450,6 @@ export class Robot {
    */
   setPosition(x: number, y: number): void {
     const wrapper = this.shadow.querySelector('.ai-robot-wrapper')! as HTMLElement;
-    const isEmbedded = wrapper.classList.contains('embedded');
-
-    // Embedded 模式下需要设置为 fixed 定位以支持位置设置（覆盖 CSS !important）
-    if (isEmbedded) {
-      wrapper.style.setProperty('position', 'fixed', 'important');
-    }
-
     wrapper.style.left = x + 'px';
     wrapper.style.top = y + 'px';
     wrapper.style.right = 'auto';

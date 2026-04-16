@@ -132,29 +132,21 @@
         </div>
       </div>
       <div class="hero-robot">
-        <div class="robot-showcase-wrapper">
-          <div class="robot-showcase">
-            <!-- 动态光效背景 -->
-            <div class="robot-showcase-bg"></div>
-            <!-- 漂浮光点效果 -->
-            <div class="glow-orb"></div>
-            <div class="glow-orb"></div>
-            <div class="glow-orb"></div>
-            <!-- 内嵌机器人展示容器 -->
-            <div id="hero-robot-container">
-              <ai-robot
-                id="robot"
-                embedded
-                api-key=""
-                api-endpoint=""
-                wake-word="嗨小智"
-                theme="blue"
-                position="right"
-                visible="true"
-              ></ai-robot>
-            </div>
-            <p class="robot-hint" data-i18n="hero.robot.hint">可爱的 AI 机器人助手<br>点击开始对话</p>
+        <div class="robot-showcase">
+          <!-- 内嵌机器人展示容器 -->
+          <div id="hero-robot-container">
+            <ai-robot
+              id="robot"
+              embedded
+              api-key=""
+              api-endpoint=""
+              wake-word="嗨小智"
+              theme="blue"
+              position="right"
+              visible="true"
+            ></ai-robot>
           </div>
+          <p class="robot-hint" data-i18n="hero.robot.hint">可爱的 AI 机器人助手<br>点击开始对话</p>
         </div>
       </div>
     </div>

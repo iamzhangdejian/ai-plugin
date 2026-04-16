@@ -132,6 +132,8 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private createShadow(): void {
     this.shadow = this.attachShadow({ mode: 'open' });
 
+    const isEmbedded = this.hasAttribute('embedded');
+
     // 机器人容器
     const robotContainer = createElement('div', 'robot-container');
     robotContainer.style.cssText = `
@@ -144,12 +146,11 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     `;
     this.shadow.appendChild(robotContainer);
 
-    // 对话框容器 - 与机器人同级，使用 fixed 定位确保相对于视口
-    // 即使在 embedded 模式下也需要 fixed，因为 ChatPanel 内部使用视口坐标计算位置
+    // 对话框容器 - 与机器人同级，固定在 shadow DOM 中
     const chatContainer = createElement('div', 'chat-container');
     chatContainer.style.cssText = `
       all: initial;
-      position: fixed;
+      position: ${isEmbedded ? 'absolute' : 'fixed'};
       z-index: 1000000;
       pointer-events: none;
       left: 0;
@@ -340,8 +341,10 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   }
 
   private bindEvents(): void {
-    // 注意：不通过 window 监听 state-change 事件，避免与 StateMachine 的事件形成循环
-    // 状态变化事件通过 robot.on() 和 stateMachine.on() 处理
+    window.addEventListener('state-change', ((e: CustomEvent) => {
+      const { from, to } = e.detail;
+      this.dispatch('state-change', { from, to });
+    }) as EventListener);
   }
 
   private toggleChat(): void {
