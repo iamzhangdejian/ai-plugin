@@ -104,9 +104,14 @@ export class Robot {
       }
 
       .ai-robot-wrapper.embedded {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
         width: 270px;
         height: 270px;
         cursor: pointer;
+        z-index: auto;
       }
 
       .ai-robot-wrapper:active {
