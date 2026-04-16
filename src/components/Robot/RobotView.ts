@@ -36,6 +36,12 @@ export class RobotView {
    * 初始化
    */
   private init(): void {
+    console.log('[RobotView] Initializing...', {
+      container: this.container,
+      containerSize: { width: this.container.clientWidth, height: this.container.clientHeight },
+      options: this.options
+    });
+
     // 设置容器样式
     this.container.style.setProperty('--robot-size', `${this.options.size}px`);
 
@@ -44,6 +50,8 @@ export class RobotView {
       color: this.getThemeColor(),
       size: this.options.size,
     });
+
+    console.log('[RobotView] Robot3D created, canvas:', this.container.querySelector('canvas'));
 
     this.updateState(this.state);
   }

@@ -49,6 +49,8 @@ export class Robot3D {
   private time = 0;
 
   constructor(container: HTMLElement, options: Robot3DOptions = {}) {
+    console.log('[Robot3D] Constructor called:', { container, containerSize: { width: container.clientWidth, height: container.clientHeight }, options });
+
     this.container = container;
     this.options = {
       size: 80,
@@ -63,6 +65,7 @@ export class Robot3D {
     this.scene.background = null;
 
     const aspect = container.clientWidth / container.clientHeight;
+    console.log('[Robot3D] Camera aspect:', aspect, 'container size:', container.clientWidth, 'x', container.clientHeight);
     this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
     this.camera.position.set(0, 0, 3.5);
 
@@ -73,6 +76,8 @@ export class Robot3D {
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+    console.log('[Robot3D] Renderer created, canvas size:', this.renderer.domElement.width, 'x', this.renderer.domElement.height);
+
     this.robot = new THREE.Group();
     this.createRobot();
     this.scene.add(this.robot);
@@ -81,6 +86,8 @@ export class Robot3D {
     this.setupLights();
 
     container.appendChild(this.renderer.domElement);
+
+    console.log('[Robot3D] Canvas appended to container');
 
     this.animate();
 

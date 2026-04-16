@@ -133,7 +133,20 @@
       </div>
       <div class="hero-robot">
         <div class="robot-showcase">
-          <!-- 内嵌机器人展示容器 -->
+          <!-- 炫光特效层 - 放在最上层，使用绝对定位脱离 flex 布局 -->
+          <div class="showcase-glow-effect" aria-hidden="true">
+            <div class="glow-ring ring-1"></div>
+            <div class="glow-ring ring-2"></div>
+            <div class="glow-ring ring-3"></div>
+            <div class="floating-orb orb-1"></div>
+            <div class="floating-orb orb-2"></div>
+            <div class="floating-orb orb-3"></div>
+            <div class="floating-orb orb-4"></div>
+            <div class="light-beam beam-1"></div>
+            <div class="light-beam beam-2"></div>
+            <div class="light-beam beam-3"></div>
+          </div>
+          <!-- 机器人容器 -->
           <div id="hero-robot-container">
             <ai-robot
               id="robot"

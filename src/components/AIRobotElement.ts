@@ -134,34 +134,32 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
     const isEmbedded = this.hasAttribute('embedded');
 
-    // 机器人容器
-    const robotContainer = createElement('div', 'robot-container');
-    robotContainer.style.cssText = `
-      all: initial;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    `;
-    this.shadow.appendChild(robotContainer);
+    console.log('[AIRobotElement] Creating Shadow DOM, isEmbedded:', isEmbedded);
 
-    // 对话框容器 - 与机器人同级，固定在 shadow DOM 中
+    // 对话框容器
     const chatContainer = createElement('div', 'chat-container');
+    // 对于 embedded 模式，对话框也需要添加到 document.body，使用 fixed 定位
     chatContainer.style.cssText = `
       all: initial;
-      position: ${isEmbedded ? 'absolute' : 'fixed'};
+      position: fixed;
       z-index: 1000000;
       pointer-events: none;
       left: 0;
       top: 0;
     `;
-    this.shadow.appendChild(chatContainer);
+
+    // 对于 embedded 模式，将 chatContainer 添加到 document.body
+    if (isEmbedded) {
+      document.body.appendChild(chatContainer);
+      console.log('[AIRobotElement] Chat container appended to document.body');
+    } else {
+      this.shadow.appendChild(chatContainer);
+    }
 
     // 保存引用以便更新位置
     (this as unknown as Record<string, unknown>).chatContainer = chatContainer;
-    // 保存 robotContainer 引用
-    (this as unknown as Record<string, unknown>).robotContainer = robotContainer;
+    // robotContainer 现在是 ShadowRoot，Robot 将在其中创建内容
+    (this as unknown as Record<string, unknown>).robotContainer = this.shadow;
   }
 
   private initComponents(): void {
@@ -196,6 +194,8 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     const robotContainer = (this as unknown as Record<string, unknown>).robotContainer as HTMLElement;
     const isEmbedded = this.hasAttribute('embedded');
 
+    console.log('[AIRobotElement] Creating Robot...', { isEmbedded, robotContainer });
+
     this.robot = new Robot(robotContainer, {
       theme: this.config.theme as 'blue' | 'green' | 'purple' | undefined,
       position: this.config.position,
@@ -203,47 +203,30 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
       embedded: isEmbedded,
     });
 
+    console.log('[AIRobotElement] Robot created:', this.robot);
+
     // 计算初始位置（白色卡片区域中心）- 在机器人初始化后设置
     if (isEmbedded) {
-      // 检查是否是页面刷新，如果是则忽略保存的位置
-      const isPageRefreshFlag = document.documentElement.getAttribute('data-ai-robot-reset') === 'true';
-      console.log('[AIRobotElement] Checking refresh flag:', isPageRefreshFlag);
+      // 页面刷新时总是使用初始位置，不恢复保存的位置
+      // 使用 sessionStorage 标记本次会话是否已保存过位置
+      const hasSavedInSession = sessionStorage.getItem('ai-robot-saved');
 
-      let useInitialPosition = isPageRefreshFlag;
-
-      // 非刷新页面，检查是否有保存的位置
-      if (!isPageRefreshFlag) {
+      if (hasSavedInSession) {
+        // 本次会话中有保存的位置，恢复它
         const savedPosition = this.loadSavedPosition();
         if (savedPosition) {
-          // 使用保存的位置
-          this.robot.setPosition(savedPosition.x, savedPosition.y);
-          console.log('[AIRobotElement] Restored saved position:', savedPosition);
-          useInitialPosition = false;
+          console.log('[AIRobotElement] Using saved position:', savedPosition);
+          requestAnimationFrame(() => {
+            this.robot.setPosition(savedPosition.x, savedPosition.y);
+            console.log('[AIRobotElement] Restored saved position:', savedPosition);
+          });
         } else {
-          useInitialPosition = true;
-          console.log('[AIRobotElement] No saved position, using initial position');
+          this.setInitialCenterPosition();
         }
       } else {
-        console.log('[AIRobotElement] Page refresh detected, using initial position');
-      }
-
-      // 设置初始位置
-      if (useInitialPosition) {
-        // 延迟等待容器渲染
-        setTimeout(() => {
-          const container = document.getElementById('hero-robot-container');
-          if (container) {
-            const rect = container.getBoundingClientRect();
-            const robotWrapperSize = 270;
-            const robotVisualOffset = 120;
-
-            const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
-            const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + robotVisualOffset;
-
-            this.robot.setPosition(centerX, centerY);
-            console.log('[AIRobotElement] Set initial position:', { x: centerX, y: centerY });
-          }
-        }, 200);
+        // 首次访问或刷新页面，使用初始位置
+        console.log('[AIRobotElement] Using initial center position (refresh or first visit)');
+        this.setInitialCenterPosition();
       }
     }
 
@@ -296,6 +279,9 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
       // 保存位置到 localStorage
       const pos = this.robot.getPosition();
       this.savePosition(pos.x, pos.y);
+      // 标记本次会话已保存位置
+      sessionStorage.setItem('ai-robot-saved', 'true');
+      console.log('[AIRobotElement] Position saved, session flag set');
     });
 
     this.stateMachine.on('*', (newState) => {
@@ -341,10 +327,9 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   }
 
   private bindEvents(): void {
-    window.addEventListener('state-change', ((e: CustomEvent) => {
-      const { from, to } = e.detail;
-      this.dispatch('state-change', { from, to });
-    }) as EventListener);
+    // 移除会导致无限循环的 state-change 监听器
+    // 状态变化通过 stateMachine.on('*', ...) 直接处理
+    console.log('[AIRobotElement] Events bound');
   }
 
   private toggleChat(): void {
@@ -591,8 +576,16 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private loadSavedPosition(): { x: number; y: number } | null {
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
+      console.log('[AIRobotElement] loadSavedPosition:', saved);
       if (saved) {
-        return JSON.parse(saved);
+        const position = JSON.parse(saved);
+        console.log('[AIRobotElement] Parsed saved position:', position);
+        // 如果位置在左上角（0, 0 附近），认为是无效位置，返回 null
+        if (position.x < 50 && position.y < 50) {
+          console.log('[AIRobotElement] Saved position is near top-left, ignoring');
+          return null;
+        }
+        return position;
       }
     } catch (e) {
       console.warn('[AIRobotElement] Failed to load position:', e);
@@ -622,8 +615,8 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
           const container = document.getElementById('hero-robot-container');
           if (container) {
             const rect = container.getBoundingClientRect();
-            const robotWrapperSize = 270;
-            const robotVisualOffset = 120;
+            const robotWrapperSize = 360;
+            const robotVisualOffset = 200;
 
             const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
             const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + robotVisualOffset;
@@ -638,6 +631,32 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     }
   }
 
+  /**
+   * 设置初始中心位置（页面加载时调用）
+   */
+  private setInitialCenterPosition(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const container = document.getElementById('hero-robot-container');
+        console.log('[AIRobotElement] Setting initial position, container:', container);
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          const robotWrapperSize = 360;
+          const robotVisualOffset = 200;
+
+          const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
+          const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + robotVisualOffset;
+
+          console.log('[AIRobotElement] Calculated position:', { centerX, centerY, rect });
+          this.robot.setPosition(centerX, centerY);
+          console.log('[AIRobotElement] Set initial position:', { x: centerX, y: centerY });
+        } else {
+          console.error('[AIRobotElement] hero-robot-container not found');
+        }
+      });
+    });
+  }
+
   destroy(): void {
     this.isDisconnected = false;
     this.stopPositionUpdate();
@@ -647,6 +666,16 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.robot.destroy();
     this.stateMachine.clearCallbacks();
     this.eventCallbacks.clear();
+
+    // 清理 embedded 模式的 chatContainer
+    const isEmbedded = this.hasAttribute('embedded');
+    if (isEmbedded) {
+      const chatContainer = (this as unknown as Record<string, unknown>).chatContainer as HTMLElement;
+      if (chatContainer && chatContainer.parentNode === document.body) {
+        chatContainer.remove();
+      }
+    }
+
     this.initialized = false;
   }
 }
