@@ -341,10 +341,8 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   }
 
   private bindEvents(): void {
-    window.addEventListener('state-change', ((e: CustomEvent) => {
-      const { from, to } = e.detail;
-      this.dispatch('state-change', { from, to });
-    }) as EventListener);
+    // 注意：不通过 window 监听 state-change 事件，避免与 StateMachine 的事件形成循环
+    // 状态变化事件通过 robot.on() 和 stateMachine.on() 处理
   }
 
   private toggleChat(): void {
