@@ -60,7 +60,7 @@ const translations = {
     'hero.btn.interact': '💬 和我互动',
     'hero.btn.docs': '📖 查看文档',
     'hero.scroll': '向下滚动',
-    'hero.robot.hint': '可爱的 AI 机器人助手<br>点击开始对话',
+    'hero.robot.hint': '✨ 戳戳我开始聊天吧～',
     'features.title': '✨ 核心特性',
     'features.desc': '为现代 Web 应用打造的最佳 AI 助手体验',
     'features.f1.title': '3D 可爱机器人',
@@ -149,7 +149,7 @@ const translations = {
     'hero.btn.interact': '💬 Interact With Me',
     'hero.btn.docs': '📖 View Docs',
     'hero.scroll': 'Scroll Down',
-    'hero.robot.hint': 'Cute AI Robot Assistant<br>Click to Start Chat',
+    'hero.robot.hint': '✨ Tap me to chat~',
     'features.title': 'Core Features',
     'features.desc': 'Best AI Assistant Experience for Modern Web Applications',
     'features.f1.title': '3D Cute Robot',
@@ -479,9 +479,26 @@ function activateRobot() {
 function setupRobotEvents() {
   const robot = document.getElementById('robot');
 
-  robot?.addEventListener('robot-ready', () => {
+  // 监听 robot-ready 事件
+  const handleRobotReady = () => {
     console.log('🤖 Robot is ready!');
-  });
+    // 启动定时互动效果
+    startRobotHintInterval();
+  };
+
+  // 同时监听两种事件来源
+  if (robot) {
+    robot.addEventListener('robot-ready', handleRobotReady);
+  }
+  window.addEventListener('ai-robot-ready', handleRobotReady);
+
+  // 如果机器人已经就绪（事件可能已经触发），延迟启动
+  if (robot && typeof robot.showHintBubble === 'function') {
+    setTimeout(() => {
+      console.log('🤖 Robot already ready, starting interval...');
+      startRobotHintInterval();
+    }, 500);
+  }
 
   robot?.addEventListener('message-sent', (e) => {
     console.log('📤 Message sent:', e.detail);
@@ -490,6 +507,33 @@ function setupRobotEvents() {
   robot?.addEventListener('message-received', (e) => {
     console.log('📥 Message received:', e.detail);
   });
+}
+
+/**
+ * 启动定时互动效果
+ */
+let robotHintInterval = null;
+function startRobotHintInterval() {
+  // 每 5 秒触发一次互动效果
+  robotHintInterval = setInterval(() => {
+    // 检查页面是否可见
+    if (document.visibilityState === 'visible') {
+      const robot = document.getElementById('robot');
+      if (robot && typeof robot.showHintBubble === 'function') {
+        robot.showHintBubble();
+      }
+    }
+  }, 5000);
+}
+
+/**
+ * 停止定时互动效果
+ */
+function stopRobotHintInterval() {
+  if (robotHintInterval) {
+    clearInterval(robotHintInterval);
+    robotHintInterval = null;
+  }
 }
 
 // ==================== 页面刷新处理 ====================
@@ -534,6 +578,15 @@ function init() {
 
   // 设置机器人事件监听
   setupRobotEvents();
+
+  // 监听页面可见性变化，控制定时器
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      stopRobotHintInterval();
+    } else {
+      startRobotHintInterval();
+    }
+  });
 
   // 点击外部关闭语言下拉菜单
   document.addEventListener('click', (e) => {

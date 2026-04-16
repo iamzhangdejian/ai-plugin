@@ -65,9 +65,7 @@ export class Robot3D {
     this.scene.background = null;
 
     const aspect = container.clientWidth / container.clientHeight;
-    console.log('[Robot3D] Camera aspect:', aspect, 'container size:', container.clientWidth, 'x', container.clientHeight);
     this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
-    // 调整相机距离使机器人填充容器
     this.camera.position.set(0, 0, 2.0);
     this.camera.lookAt(0, 0, 0);
 
@@ -78,16 +76,7 @@ export class Robot3D {
     });
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setClearColor(0x000000, 0); // 完全透明
-
-    console.log('[Robot3D] Renderer created, canvas size:', this.renderer.domElement.width, 'x', this.renderer.domElement.height);
-
-    // 设置 Canvas 样式确保透明
-    this.renderer.domElement.style.background = 'transparent';
-    this.renderer.domElement.style.border = 'none';
-    this.renderer.domElement.style.position = 'absolute';
-    this.renderer.domElement.style.top = '0';
-    this.renderer.domElement.style.left = '0';
+    this.renderer.setClearColor(0x000000, 0);
 
     this.robot = new THREE.Group();
     this.createRobot();
@@ -97,8 +86,6 @@ export class Robot3D {
     this.setupLights();
 
     container.appendChild(this.renderer.domElement);
-
-    console.log('[Robot3D] Canvas appended to container');
 
     this.animate();
 
@@ -124,15 +111,6 @@ export class Robot3D {
 
     // 将机器人添加到场景
     this.scene.add(this.robot);
-
-    // 调试：输出机器人边界（应用偏移前的原始数据）
-    const box = new THREE.Box3().setFromObject(this.robot);
-    console.log('[Robot3D] Robot bounds (before offset):', {
-      min: box.min,
-      max: box.max,
-      size: new THREE.Vector3().subVectors(box.max, box.min),
-      center: new THREE.Vector3().addVectors(box.min, box.max).multiplyScalar(0.5)
-    });
   }
 
   /**
@@ -668,17 +646,6 @@ export class Robot3D {
 
     // 更新发光效果
     this.updateGlowEffects();
-
-    // 每 60 帧输出一次应用偏移后的边界（用于调试）
-    if (Math.floor(this.time * 60) % 60 === 0) {
-      const appliedBox = new THREE.Box3().setFromObject(this.robot);
-      console.log('[Robot3D] Robot bounds (with offset):', {
-        min: appliedBox.min,
-        max: appliedBox.max,
-        size: new THREE.Vector3().subVectors(appliedBox.max, appliedBox.min),
-        center: new THREE.Vector3().addVectors(appliedBox.min, appliedBox.max).multiplyScalar(0.5)
-      });
-    }
 
     this.renderer.render(this.scene, this.camera);
   };

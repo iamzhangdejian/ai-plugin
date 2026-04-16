@@ -140,8 +140,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
     const isEmbedded = this.hasAttribute('embedded');
 
-    console.log('[AIRobotElement] Creating Shadow DOM, isEmbedded:', isEmbedded);
-
     // 在 Shadow DOM 内部设置 :host 样式为透明
     const hostStyle = createElement('style');
     hostStyle.textContent = `
@@ -172,7 +170,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     // 对于 embedded 模式，将 chatContainer 添加到 document.body
     if (isEmbedded) {
       document.body.appendChild(chatContainer);
-      console.log('[AIRobotElement] Chat container appended to document.body');
     } else {
       this.shadow.appendChild(chatContainer);
     }
@@ -185,12 +182,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
   private initComponents(): void {
     this.stateMachine = new StateMachine();
-
-    console.log('[AIRobotElement] Initializing with config:', {
-      apiKey: this.config.apiKey ? '***' : '(empty)',
-      apiEndpoint: this.config.apiEndpoint || '(empty)',
-      mockMode: !this.config.apiEndpoint
-    });
 
     this.aiAssistant = new AIAssistant({
       apiKey: this.config.apiKey,
@@ -215,16 +206,12 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     const robotContainer = (this as unknown as Record<string, unknown>).robotContainer as HTMLElement;
     const isEmbedded = this.hasAttribute('embedded');
 
-    console.log('[AIRobotElement] Creating Robot...', { isEmbedded, robotContainer });
-
     this.robot = new Robot(robotContainer, {
       theme: this.config.theme as 'blue' | 'green' | 'purple' | undefined,
       position: this.config.position,
       visible: this.config.visible,
       embedded: isEmbedded,
     });
-
-    console.log('[AIRobotElement] Robot created:', this.robot);
 
     // 计算初始位置（白色卡片区域中心）- 在机器人初始化后设置
     if (isEmbedded) {
@@ -236,17 +223,13 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
         // 本次会话中有保存的位置，恢复它
         const savedPosition = this.loadSavedPosition();
         if (savedPosition) {
-          console.log('[AIRobotElement] Using saved position:', savedPosition);
           requestAnimationFrame(() => {
             this.robot.setPosition(savedPosition.x, savedPosition.y);
-            console.log('[AIRobotElement] Restored saved position:', savedPosition);
           });
         } else {
           this.setInitialCenterPosition();
         }
       } else {
-        // 首次访问或刷新页面，使用初始位置
-        console.log('[AIRobotElement] Using initial center position (refresh or first visit)');
         this.setInitialCenterPosition();
       }
     }
@@ -263,7 +246,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
 
     // 监听语言变化（通过 i18n 模块）
     onLocaleChange((locale) => {
-      console.log('[AIRobotElement] Locale changed to:', locale);
       // 更新 ChatPanel 翻译
       this.chatPanel.updateLocale(locale);
     });
@@ -271,7 +253,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     // 监听页面级别的语言切换事件
     window.addEventListener('ai-robot-locale-change', ((e: Event) => {
       const locale = (e as CustomEvent<{ locale: 'zh' | 'en' }>).detail.locale;
-      console.log('[AIRobotElement] Received locale change event:', locale);
       this.chatPanel.updateLocale(locale);
     }) as EventListener);
 
@@ -302,7 +283,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
       this.savePosition(pos.x, pos.y);
       // 标记本次会话已保存位置
       sessionStorage.setItem('ai-robot-saved', 'true');
-      console.log('[AIRobotElement] Position saved, session flag set');
     });
 
     this.stateMachine.on('*', (newState) => {
@@ -350,7 +330,6 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private bindEvents(): void {
     // 移除会导致无限循环的 state-change 监听器
     // 状态变化通过 stateMachine.on('*', ...) 直接处理
-    console.log('[AIRobotElement] Events bound');
   }
 
   private toggleChat(): void {
@@ -597,13 +576,10 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private loadSavedPosition(): { x: number; y: number } | null {
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
-      console.log('[AIRobotElement] loadSavedPosition:', saved);
       if (saved) {
         const position = JSON.parse(saved);
-        console.log('[AIRobotElement] Parsed saved position:', position);
         // 如果位置在左上角（0, 0 附近），认为是无效位置，返回 null
         if (position.x < 50 && position.y < 50) {
-          console.log('[AIRobotElement] Saved position is near top-left, ignoring');
           return null;
         }
         return position;
@@ -636,16 +612,15 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
           const container = document.getElementById('hero-robot-container');
           if (container) {
             const rect = container.getBoundingClientRect();
-            const robotWrapperSize = 360;
-            const robotVisualOffset = 200;
+            const robotWrapperSize = 250;
+            const verticalOffset = 50; // 向下偏移量
 
             const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
-            const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + robotVisualOffset;
+            const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + verticalOffset;
 
             this.robot.setPosition(centerX, centerY);
             // 清除保存的位置
             this.clearSavedPosition();
-            console.log('[AIRobotElement] Reset to initial position:', { x: centerX, y: centerY });
           }
         });
       });
@@ -659,20 +634,15 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const container = document.getElementById('hero-robot-container');
-        console.log('[AIRobotElement] Setting initial position, container:', container);
         if (container) {
           const rect = container.getBoundingClientRect();
-          const robotWrapperSize = 360;
-          const robotVisualOffset = 200;
+          const robotWrapperSize = 250;
+          const verticalOffset = 50; // 向下偏移量
 
           const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
-          const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + robotVisualOffset;
+          const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + verticalOffset;
 
-          console.log('[AIRobotElement] Calculated position:', { centerX, centerY, rect });
           this.robot.setPosition(centerX, centerY);
-          console.log('[AIRobotElement] Set initial position:', { x: centerX, y: centerY });
-        } else {
-          console.error('[AIRobotElement] hero-robot-container not found');
         }
       });
     });

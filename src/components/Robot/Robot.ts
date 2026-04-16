@@ -48,13 +48,6 @@ export class Robot {
       this.shadow = isShadowRoot ? container : container.attachShadow({ mode: 'open' });
     }
 
-    console.log('[Robot] Constructor called:', {
-      containerType: isShadowRoot ? 'ShadowRoot' : 'HTMLElement',
-      container: this.container,
-      shadow: this.shadow,
-      isEmbedded
-    });
-
     this.options = {
       theme: 'blue',
       position: 'right',
@@ -72,25 +65,18 @@ export class Robot {
    * 初始化
    */
   private init(): void {
-    console.log('[Robot] Initializing...', { embedded: this.options.embedded });
-
     this.createStyles();
     this.createStructure();
 
     const wrapper = this.getWrapper();
-    console.log('[Robot] Structure created, wrapper:', wrapper);
 
     this.robotView = new RobotView(
       wrapper.querySelector('.ai-robot-canvas-container')!,
       { theme: this.options.theme, size: this.options.embedded ? 250 : 120 }
     );
 
-    console.log('[Robot] RobotView created');
-
     this.bindEvents();
     this.stateMachine.setState(this.options.visible ? 'idle' : 'hidden');
-
-    console.log('[Robot] Initial state:', this.options.visible ? 'idle' : 'hidden');
 
     // 对于 embedded 模式，不在此处设置位置，由 AIRobotElement 异步设置
     // 因为 wrapper 在 document.body 中，需要等待布局完成后才能正确计算位置
@@ -101,8 +87,6 @@ export class Robot {
     }
 
     this.dispatch('ready');
-
-    console.log('[Robot] Initialization complete');
   }
 
   /**
@@ -205,7 +189,7 @@ export class Robot {
       /* 提示气泡 */
       .ai-robot-hint-bubble {
         position: absolute;
-        top: -90px;
+        top: -5px;
         left: 50%;
         transform: translateX(-50%);
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -235,7 +219,7 @@ export class Robot {
 
       .ai-robot-hint-bubble.visible {
         opacity: 1;
-        top: -100px;
+        top: -15px;
       }
 
       /* 机器人发光圈效果 - 围绕机器人的光环 */
@@ -278,6 +262,14 @@ export class Robot {
                       inset 0 0 0 rgba(102, 126, 234, 0);
         }
       }
+
+      /* 可爱的晃动动画 */
+      @keyframes hintWiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-5deg); }
+        50% { transform: rotate(5deg); }
+        75% { transform: rotate(-5deg); }
+      }
     `;
 
     // 对于 embedded 模式，样式添加到 document head；否则添加到 Shadow DOM
@@ -317,7 +309,6 @@ export class Robot {
     // 这样 position: fixed 才能相对于 viewport 正确定位，不受任何祖先元素影响
     if (this.options.embedded) {
       document.body.appendChild(wrapper);
-      console.log('[Robot] Wrapper appended to document.body for embedded mode');
     } else {
       this.shadow.appendChild(wrapper);
     }
@@ -406,8 +397,6 @@ export class Robot {
 
       this.hasMoved = false;
     }) as EventListener;
-
-    console.log('[Robot] Events bound to document for drag functionality');
 
     // 绑定到 document 确保拖拽流畅
     document.addEventListener('pointermove', onPointerMove);
@@ -516,11 +505,9 @@ export class Robot {
     // 对于 embedded 模式，wrapper 在 document.body 中；否则在 Shadow DOM 中
     if (this.options.embedded) {
       const wrapper = document.querySelector('.ai-robot-wrapper.embedded') as HTMLElement;
-      console.log('[Robot] getWrapper (embedded):', wrapper);
       return wrapper;
     }
     const wrapper = this.shadow.querySelector('.ai-robot-wrapper') as HTMLElement;
-    console.log('[Robot] getWrapper (non-embedded):', wrapper);
     return wrapper;
   }
 
@@ -559,7 +546,6 @@ export class Robot {
    */
   setPosition(x: number, y: number): void {
     const wrapper = this.getWrapper();
-    console.log('[Robot] setPosition called:', { x, y, wrapper });
     if (!wrapper) {
       console.error('[Robot] Wrapper not found in setPosition');
       return;
@@ -568,7 +554,6 @@ export class Robot {
     wrapper.style.top = y + 'px';
     wrapper.style.right = 'auto';
     wrapper.style.transform = 'none';
-    console.log('[Robot] Position set, wrapper styles:', { left: wrapper.style.left, top: wrapper.style.top });
   }
 
   /**
@@ -612,19 +597,18 @@ export class Robot {
     const hintBubble = wrapper.querySelector('.ai-robot-hint-bubble') as HTMLElement;
 
     if (hintBubble) {
+      // 使用拖拽提示文字
+      hintBubble.textContent = t('robot.dragHint');
       hintBubble.classList.add('visible');
-    }
 
-    // 添加发光圈特效
-    if (wrapper) {
-      wrapper.classList.add('robot-glow');
+      // 添加可爱的晃动动画
+      wrapper.style.animation = 'hintWiggle 0.6s ease-in-out';
+      setTimeout(() => {
+        if (wrapper) {
+          wrapper.style.animation = '';
+        }
+      }, 600);
     }
-
-    setTimeout(() => {
-      if (wrapper) {
-        wrapper.classList.remove('robot-glow');
-      }
-    }, 1500);
 
     setTimeout(() => {
       if (hintBubble) {

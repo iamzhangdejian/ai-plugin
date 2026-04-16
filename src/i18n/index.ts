@@ -7,6 +7,7 @@ export type Locale = 'zh' | 'en';
 export interface TranslationMap {
   'robot.title': string;
   'robot.hint': string;
+  'robot.dragHint': string;
   'chat.placeholder': string;
   'chat.emptyHint': string;
   'chat.voice.listening': string;
@@ -15,14 +16,16 @@ export interface TranslationMap {
 const translations: Record<Locale, TranslationMap> = {
   zh: {
     'robot.title': 'AI 助手',
-    'robot.hint': '✨ 点击我开始对话～',
+    'robot.hint': '✨ 戳戳我开始聊天吧～',
+    'robot.dragHint': '💫 我可以自由拖动哦～',
     'chat.placeholder': '输入消息...',
     'chat.emptyHint': '✨ 开始和 AI 助手对话吧～',
     'chat.voice.listening': '🔴',
   },
   en: {
     'robot.title': 'AI Assistant',
-    'robot.hint': '✨ Click to start chat~',
+    'robot.hint': '✨ Tap me to chat~',
+    'robot.dragHint': '💫 I can be dragged freely~',
     'chat.placeholder': 'Type a message...',
     'chat.emptyHint': '✨ Start chatting with AI assistant~',
     'chat.voice.listening': '🔴',
