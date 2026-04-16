@@ -172,10 +172,10 @@ export class Robot {
 
       .ai-robot-canvas-container {
         position: absolute;
-        top: -20%;
+        top: 0;
         left: 0;
         width: 100%;
-        height: 120%;
+        height: 100%;
         border-radius: 50%;
         overflow: visible;
         transform-origin: center center;
