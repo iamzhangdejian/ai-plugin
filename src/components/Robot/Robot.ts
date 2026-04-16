@@ -82,7 +82,7 @@ export class Robot {
 
     this.robotView = new RobotView(
       wrapper.querySelector('.ai-robot-canvas-container')!,
-      { theme: this.options.theme, size: this.options.embedded ? 380 : 120 }
+      { theme: this.options.theme, size: this.options.embedded ? 450 : 120 }
     );
 
     console.log('[Robot] RobotView created');
@@ -144,8 +144,8 @@ export class Robot {
 
       .ai-robot-wrapper.embedded {
         position: fixed;
-        width: 380px;
-        height: 420px;
+        width: 450px;
+        height: 550px;
         cursor: pointer;
         left: 50%;
         top: 50%;
