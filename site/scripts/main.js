@@ -455,6 +455,7 @@ function selectMode(mode) {
   const modeOptions = document.querySelectorAll('.mode-option');
   const apiForm = document.getElementById('apiConfigForm');
   const mockConfirmActions = document.getElementById('mockConfirmActions');
+  const apiFormActions = document.querySelector('.api-form-actions');
   const apiKeyInput = document.getElementById('apiKey');
 
   modeOptions.forEach(opt => {
@@ -463,9 +464,11 @@ function selectMode(mode) {
 
   if (mode === 'mock') {
     apiForm?.classList.remove('visible');
+    apiFormActions?.classList.add('hidden');
     mockConfirmActions?.classList.remove('hidden');
   } else {
     apiForm?.classList.add('visible');
+    apiFormActions?.classList.remove('hidden');
     mockConfirmActions?.classList.add('hidden');
     setTimeout(() => {
       apiKeyInput?.focus();
