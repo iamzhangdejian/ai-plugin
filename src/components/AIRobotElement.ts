@@ -108,7 +108,7 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
         break;
       case 'api-endpoint':
         this.config.apiEndpoint = newValue || '';
-        this.aiAssistant?.setConfig({ apiEndpoint: this.config.apiEndpoint });
+        this.aiAssistant?.setConfig({ apiEndpoint: this.config.apiEndpoint, mockMode: !this.config.apiEndpoint });
         break;
       case 'wake-word':
         this.config.wakeWord = newValue || '';
@@ -433,9 +433,11 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.config = { ...this.config, ...config };
 
     if (config.apiKey || config.apiEndpoint) {
+      const newEndpoint = config.apiEndpoint ?? this.config.apiEndpoint;
       this.aiAssistant.setConfig({
         apiKey: config.apiKey ?? this.config.apiKey,
-        apiEndpoint: config.apiEndpoint ?? this.config.apiEndpoint,
+        apiEndpoint: newEndpoint,
+        mockMode: !newEndpoint,
       });
     }
 

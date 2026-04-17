@@ -346,7 +346,7 @@ function updateRobotConfig() {
       robot.setAttribute('api-key', '');
       robot.setAttribute('api-endpoint', '');
       if (typeof robot.setConfig === 'function') {
-        robot.setConfig({ apiKey: '', apiEndpoint: '' });
+        robot.setConfig({ apiKey: '', apiEndpoint: '', mockMode: true });
       }
     } else {
       robot.setAttribute('api-key', apiConfig.apiKey);
@@ -354,7 +354,8 @@ function updateRobotConfig() {
       if (typeof robot.setConfig === 'function') {
         robot.setConfig({
           apiKey: apiConfig.apiKey,
-          apiEndpoint: apiConfig.apiEndpoint
+          apiEndpoint: apiConfig.apiEndpoint,
+          mockMode: false,
         });
       }
     }

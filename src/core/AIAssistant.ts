@@ -72,21 +72,12 @@ export class AIAssistant {
         throw new Error('API key not configured');
       }
 
-      // 构建 OpenAI 兼容的 API 请求格式
-      const messages = this.messageHistory.slice(-10).map(m => ({
-        role: m.type === 'user' ? 'user' : 'assistant',
-        content: m.content,
-      }));
-
+      // 构建请求体 - 使用 query 参数格式
       const requestBody = {
-        model: 'gpt-3.5-turbo', // 兼容模式下模型名可以是任意支持的模型
-        messages: messages,
-        stream: false,
-        temperature: 0.7,
-        max_tokens: 1024
+        query: message,
       };
 
-      console.log('[AIAssistant] Sending message to OpenAI-compatible API:', this.options.apiEndpoint);
+      console.log('[AIAssistant] Sending message to API:', this.options.apiEndpoint);
       console.log('[AIAssistant] Request body:', JSON.stringify(requestBody, null, 2));
 
       const controller = new AbortController();
@@ -97,6 +88,7 @@ export class AIAssistant {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.options.apiKey}`,
+          'X-API-Key': this.options.apiKey,
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
@@ -123,6 +115,8 @@ export class AIAssistant {
 
       console.log('[AIAssistant] Parsed API response:', data);
 
+      // 尝试多种可能的响应格式
+
       // OpenAI 兼容格式：{ choices: [{ message: { role, content } }], usage, id, object, created }
       if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
         const reply = data.choices[0].message.content;
@@ -130,9 +124,48 @@ export class AIAssistant {
         return reply;
       }
 
-      // 尝试其他可能的响应格式
+      // { output: { message: { content: ... } } }
       if (data.output && data.output.message && data.output.message.content) {
         const reply = data.output.message.content;
+        this.addMessage(reply, 'assistant');
+        return reply;
+      }
+
+      // { response: "..." } 或 { data: "..." }
+      if (typeof data.response === 'string') {
+        const reply = data.response;
+        this.addMessage(reply, 'assistant');
+        return reply;
+      }
+
+      if (typeof data.data === 'string') {
+        const reply = data.data;
+        this.addMessage(reply, 'assistant');
+        return reply;
+      }
+
+      // { answer: "..." } 或 { reply: "..." }
+      if (typeof data.answer === 'string') {
+        const reply = data.answer;
+        this.addMessage(reply, 'assistant');
+        return reply;
+      }
+
+      if (typeof data.reply === 'string') {
+        const reply = data.reply;
+        this.addMessage(reply, 'assistant');
+        return reply;
+      }
+
+      // { result: "..." } 或 { content: "..." }
+      if (typeof data.result === 'string') {
+        const reply = data.result;
+        this.addMessage(reply, 'assistant');
+        return reply;
+      }
+
+      if (typeof data.content === 'string') {
+        const reply = data.content;
         this.addMessage(reply, 'assistant');
         return reply;
       }
@@ -144,6 +177,10 @@ export class AIAssistant {
 
       if (data.message) {
         throw new Error(data.message);
+      }
+
+      if (data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
       }
 
       console.error('[AIAssistant] Unknown response format:', data);
