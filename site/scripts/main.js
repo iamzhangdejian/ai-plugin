@@ -50,6 +50,7 @@ const translations = {
     'api.config.desc': '选择对话模式',
     'settings.mode.mock': 'Mock 模式',
     'settings.mode.mock.desc': '使用模拟数据，无需 API 配置',
+    'settings.mode.mock.confirm': '✓ 确认使用',
     'settings.mode.api': 'API 模式',
     'settings.mode.api.desc': '配置 AI 后端服务，真实对话体验',
     'form.apiKey.placeholder': '请输入 API Key',
@@ -143,6 +144,7 @@ const translations = {
     'api.config.desc': 'Select conversation mode',
     'settings.mode.mock': 'Mock Mode',
     'settings.mode.mock.desc': 'Use simulated data, no API configuration needed',
+    'settings.mode.mock.confirm': '✓ Confirm',
     'settings.mode.api': 'API Mode',
     'settings.mode.api.desc': 'Configure AI backend service for real conversation',
     'form.apiKey.placeholder': 'Enter API Key',
@@ -422,17 +424,23 @@ function openSettings() {
   const apiEndpointInput = document.getElementById('apiEndpoint');
   const modeOptions = document.querySelectorAll('.mode-option');
   const apiForm = document.getElementById('apiConfigForm');
+  const mockConfirmActions = document.getElementById('mockConfirmActions');
+  const apiFormActions = document.querySelector('.api-form-actions');
 
   // 设置当前模式
   modeOptions.forEach(opt => {
     opt.classList.toggle('active', opt.dataset.mode === (isMockMode ? 'mock' : 'api'));
   });
 
-  // 根据模式显示/隐藏表单
+  // 根据模式显示/隐藏表单和按钮
   if (isMockMode) {
     apiForm?.classList.remove('visible');
+    apiFormActions?.classList.add('hidden');
+    mockConfirmActions?.classList.remove('hidden');
   } else {
     apiForm?.classList.add('visible');
+    apiFormActions?.classList.remove('hidden');
+    mockConfirmActions?.classList.add('hidden');
     if (apiKeyInput) apiKeyInput.value = apiConfig.apiKey || '';
     if (apiEndpointInput) apiEndpointInput.value = apiConfig.apiEndpoint || '';
   }
@@ -446,6 +454,7 @@ function openSettings() {
 function selectMode(mode) {
   const modeOptions = document.querySelectorAll('.mode-option');
   const apiForm = document.getElementById('apiConfigForm');
+  const mockConfirmActions = document.getElementById('mockConfirmActions');
   const apiKeyInput = document.getElementById('apiKey');
 
   modeOptions.forEach(opt => {
@@ -454,12 +463,25 @@ function selectMode(mode) {
 
   if (mode === 'mock') {
     apiForm?.classList.remove('visible');
+    mockConfirmActions?.classList.remove('hidden');
   } else {
     apiForm?.classList.add('visible');
+    mockConfirmActions?.classList.add('hidden');
     setTimeout(() => {
       apiKeyInput?.focus();
     }, 100);
   }
+}
+
+/**
+ * 确认 Mock 模式
+ */
+function confirmMockMode() {
+  isMockMode = true;
+  updateMockIndicator();
+  updateRobotConfig();
+  closeApiConfig();
+  showStatus('已切换到 Mock 模式', 'success');
 }
 
 /**
@@ -729,6 +751,7 @@ function init() {
   // 暴露全局函数供 HTML 调用
   window.toggleSettings = toggleSettings;
   window.selectMode = selectMode;
+  window.confirmMockMode = confirmMockMode;
   window.closeApiConfig = closeApiConfig;
   window.saveApiConfig = saveApiConfig;
   window.switchLanguage = switchLanguage;

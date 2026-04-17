@@ -432,6 +432,30 @@ body {
   display: flex;
 }
 
+/* API 表单操作按钮 */
+.api-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.api-form-actions.hidden {
+  display: none;
+}
+
+/* Mock 模式确认按钮 */
+.mock-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.mock-confirm-actions.hidden {
+  display: none;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

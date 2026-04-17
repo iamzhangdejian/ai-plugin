@@ -108,6 +108,16 @@
         </div>
       </div>
 
+      <!-- Mock 模式确认按钮 -->
+      <div class="mock-confirm-actions" id="mockConfirmActions">
+        <button type="button" class="api-config-btn secondary" onclick="closeApiConfig()">
+          <span data-i18n="form.cancel">✕ 取消</span>
+        </button>
+        <button type="button" class="api-config-btn primary" onclick="confirmMockMode()">
+          <span data-i18n="settings.mode.mock.confirm">✓ 确认使用</span>
+        </button>
+      </div>
+
       <!-- API 配置表单 -->
       <form class="api-config-form" id="apiConfigForm" onsubmit="saveApiConfig(event)">
         <div class="form-group">
@@ -145,7 +155,7 @@
           </div>
         </div>
         <div class="status-message" id="statusMessage"></div>
-        <div class="api-config-actions">
+        <div class="api-config-actions api-form-actions">
           <button type="button" class="api-config-btn secondary" onclick="closeApiConfig()">
             <span data-i18n="form.cancel">✕ 取消</span>
           </button>
