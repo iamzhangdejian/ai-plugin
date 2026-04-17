@@ -392,6 +392,15 @@ function hideStatus() {
  * 初始化 API 配置
  */
 function initApiConfig() {
+  // 先检查用户选择的模式
+  const savedMode = localStorage.getItem('ai-robot-mode');
+  if (savedMode === 'mock') {
+    isMockMode = true;
+    updateMockIndicator();
+    return;
+  }
+
+  // 如果没有保存模式，检查是否有 API 配置
   const saved = localStorage.getItem('ai-robot-config');
   if (saved) {
     try {
@@ -400,11 +409,14 @@ function initApiConfig() {
         isMockMode = false;
         updateMockIndicator();
         updateRobotConfig();
+        return;
       }
     } catch (e) {
       console.error('Failed to load saved config:', e);
     }
   }
+  // 默认 Mock 模式
+  isMockMode = true;
   updateMockIndicator();
 }
 
@@ -481,6 +493,8 @@ function selectMode(mode) {
  */
 function confirmMockMode() {
   isMockMode = true;
+  // 保存到 localStorage，覆盖之前的 API 配置选择
+  localStorage.setItem('ai-robot-mode', 'mock');
   updateMockIndicator();
   updateRobotConfig();
   closeApiConfig();
@@ -530,6 +544,8 @@ function saveApiConfig(event) {
 
   apiConfig = { apiKey, apiEndpoint };
   localStorage.setItem('ai-robot-config', JSON.stringify(apiConfig));
+  // 保存模式选择为 API
+  localStorage.setItem('ai-robot-mode', 'api');
 
   isMockMode = false;
   updateMockIndicator();
