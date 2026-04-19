@@ -384,23 +384,35 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.stateMachine.setState('thinking');
     this.chatPanel.setTypingState(true);
 
-    const reply = await this.aiAssistant.send(message);
-
-    this.stateMachine.setState('idle');
+    // 创建流式消息
+    const streamMessage = this.chatPanel.createStreamingMessage();
     this.chatPanel.setTypingState(false);
 
-    const assistantMessage: Message = {
-      id: Date.now().toString(),
-      type: 'assistant',
-      content: reply,
-      timestamp: Date.now(),
-    };
-    this.chatPanel.addMessage(assistantMessage);
-    this.dispatch('message-received', assistantMessage);
-
-    if (this.config.voice?.enabled) {
-      this.speechManager.speak(reply);
+    try {
+      await this.aiAssistant.send(message, (chunk) => {
+        streamMessage.append(chunk);
+      }, (response) => {
+        console.log('[AIRobotElement] onResponse received:', response);
+        if (response && response.report) {
+          console.log('[AIRobotElement] Rendering report in bubble:', response.report);
+          try {
+            // 在流式消息气泡内渲染报表
+            (streamMessage as any).renderReportInBubble(response.report);
+          } catch (e) {
+            console.error('[AIRobotElement] renderReportInBubble failed:', e);
+          }
+        } else {
+          console.log('[AIRobotElement] No report in response');
+        }
+      });
+      // 完成，添加操作按钮
+      streamMessage.end();
+    } catch (error) {
+      streamMessage.end();
+      console.error('[AIRobotElement] Send message failed:', error);
     }
+
+    this.stateMachine.setState('idle');
   }
 
   private hideChat(): void {

@@ -1,0 +1,2 @@
+- [API Response Format Standard](api_response_format.md) — 太原市城市内涝系统业务接口统一返回格式
+- [AI Chat API Response Format](ai_chat_api_format.md) — AI 对话接口标准化返回格式（含 answer、report、api_data）

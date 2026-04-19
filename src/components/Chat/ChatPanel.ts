@@ -7,6 +7,529 @@ import { createElement, clearChildren } from '../../utils/dom';
 import { t, loadLocaleFromStorage } from '../../i18n';
 import type { Message } from '../../types';
 
+/**
+ * 流式消息类 - 用于处理流式输出的消息
+ */
+class StreamingMessage {
+  private chatPanel: ChatPanel;
+  private message: Message;
+  private messageEl: HTMLElement | null = null;
+  private bubbleEl: HTMLElement | null = null;
+  private actionsEl: HTMLElement | null = null;
+  private fullContent = '';
+
+  constructor(chatPanel: ChatPanel) {
+    this.chatPanel = chatPanel;
+    this.message = {
+      id: Date.now().toString(),
+      type: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+    };
+    this.render();
+  }
+
+  private render(): void {
+    const container = (this.chatPanel as any).messagesContainer as HTMLElement | null;
+    if (!container) return;
+
+    this.messageEl = createElement('div', 'message assistant');
+
+    this.bubbleEl = createElement('div', 'message-bubble');
+    this.bubbleEl.innerHTML = '<span class="typing-cursor">▋</span>';
+
+    const metaEl = createElement('div', 'message-meta');
+    const timeEl = createElement('div', 'message-time');
+    timeEl.textContent = this.formatTime(this.message.timestamp);
+    metaEl.appendChild(timeEl);
+
+    // 预留操作按钮位置（结束时添加）
+    this.actionsEl = createElement('div', 'message-actions');
+    metaEl.appendChild(this.actionsEl);
+
+    this.messageEl.appendChild(this.bubbleEl);
+    this.messageEl.appendChild(metaEl);
+    container.appendChild(this.messageEl);
+
+    // 将消息添加到消息数组中，以便重试按钮可以找到
+    (this.chatPanel as any).messages.push(this.message);
+
+    this.chatPanel.scrollToBottom();
+  }
+
+  private formatTime(timestamp: number): string {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  append(content: string): void {
+    this.fullContent += content;
+    this.message.content = this.fullContent;
+
+    if (this.bubbleEl) {
+      this.bubbleEl.innerHTML = marked.parse(this.fullContent) as string;
+      this.bubbleEl.innerHTML += '<span class="typing-cursor">▋</span>';
+    }
+
+    this.chatPanel.scrollToBottom();
+  }
+
+  /**
+   * 根据数据内容和语义自动判断图表类型
+   * 基于太原市城市内涝系统 8 个业务接口场景设计
+   *
+   * 判断原则：根据数据的用途和关系选择图表
+   *
+   * 问题类型及对应图表：
+   * 1. 单条记录查询（责权单位、泵管区、排水分区）→ 卡片
+   * 2. 分类统计（各区域易涝点、各类型易涝点）→ 柱状图
+   * 3. 占比分布（各类型占比）→ 饼图
+   * 4. 趋势变化（时间序列）→ 折线图
+   * 5. 能力统计（固定抽排、移动泵车）→ 卡片/表格
+   * 6. 明细列表（摄像资源）→ 表格
+   */
+  private determineChartType(reportData: { headers?: string[]; rows?: any[][]; summary?: string }): 'table' | 'bar' | 'pie' | 'line' | 'card' {
+    // 如果数据为空，直接返回表格
+    if (!reportData.headers || !reportData.rows || reportData.rows.length === 0) {
+      return 'table';
+    }
+
+    const rows = reportData.rows;
+    const headers = reportData.headers;
+    const rowCount = rows.length;
+    const headerCount = headers.length;
+
+    // 合并所有文本用于语义分析
+    const allText = [...headers, ...rows.flat()].join(' ').toLowerCase();
+    const headerText = headers.join(' ');
+
+    // ==================== 卡片展示（单条记录） ====================
+    // 单条记录的查询结果 → 卡片
+    // 适用：责权单位、泵管区、排水分区、单个积水点信息等
+    if (rowCount === 1) {
+      return 'card';
+    }
+
+    // ==================== 分析数据列特征 ====================
+    const numericColumns: number[] = [];
+    const labelColumns: number[] = [];
+
+    for (let col = 0; col < headerCount; col++) {
+      const colValues = rows.map(row => row[col]);
+      const isNumeric = colValues.every(cell => {
+        if (cell === null || cell === undefined) return false;
+        const cellStr = String(cell).replace(/[^0-9.-]/g, '');
+        return !isNaN(Number(cellStr)) && cellStr.trim() !== '';
+      });
+
+      if (isNumeric) {
+        numericColumns.push(col);
+      } else {
+        labelColumns.push(col);
+      }
+    }
+
+    const hasLabel = labelColumns.length >= 1;
+    const hasNumeric = numericColumns.length >= 1;
+
+    // ==================== 表格：明细数据（多列） ====================
+    // 列数超过 4 列 → 明细数据，用表格（如摄像资源 4 列以上）
+    if (headerCount > 4) {
+      return 'table';
+    }
+
+    // 表头包含明细类关键词 → 表格
+    // 资源、单位、摄像、姓名、电话、职务、状态、地址等 → 明细列表
+    const hasDetailKeyword = /资源 | 单位 | 摄像 | 姓名 | 电话 | 职务 | 状态 | 地址 | 型号 | 负责人 | 联系方式/.test(headerText);
+    if (hasDetailKeyword && headerCount >= 3) {
+      return 'table';
+    }
+
+    // ==================== 能力统计 → 卡片或表格（不是柱状图） ====================
+    // 能力类统计（固定抽排能力、移动泵车数量）是指标值，不是分类对比
+    // 特征：表头包含"能力"、"抽排"、"泵车"、"装机"、"m3"、"立方米"等
+    // 或者第一列是"类型"，第二列是数值（能力统计的典型格式）
+    const hasCapacityKeyword = /能力 | 抽排 | 泵车 | 装机 | 功率 | 台数 |m3| 立方米 | 公顷 | 亩/.test(headerText);
+    const isCapacityFormat = headerCount === 2 && headers[0] === '类型'; // 能力统计典型格式：类型 + 数值
+    console.log('[StreamingMessage] Capacity keyword check:', {
+      headerText,
+      hasCapacityKeyword,
+      isCapacityFormat,
+      rowCount
+    });
+    if (hasCapacityKeyword || isCapacityFormat) {
+      // 能力统计直接用卡片或表格，不进入后续图表判断
+      return rowCount <= 2 ? 'card' : 'table';
+    }
+
+    // ==================== 图表：需要有标签列和数值列 ====================
+    if (!hasLabel || !hasNumeric) {
+      return 'table';
+    }
+
+    // ==================== 饼图：占比类数据 ====================
+    // 包含"占比"、"比例"、"百分比"、"份额"、"构成"等词
+    const hasPercentKeyword = /占比 | 比例 | 百分比 | 份额 | 构成/.test(allText);
+    if (hasPercentKeyword && headerCount === 2) {
+      return 'pie';
+    }
+
+    // ==================== 折线图：时间趋势类数据 ====================
+    // 包含"时间"、"日期"、"年份"、"月份"、"季度"、"趋势"等词
+    const hasTimeKeyword = /时间 | 日期 | 年份 | 月份 | 季度 | 趋势 | 变化/.test(allText);
+    if (hasTimeKeyword && headerCount === 2) {
+      return 'line';
+    }
+
+    // ==================== 柱状图：分类统计数据 ====================
+    // 2 列（类别 + 数量），且表头包含"数量"、"统计"、"合计"等词
+    // 适用场景：各区域易涝点数量、各类型易涝点数量
+    // 注意："能力"已经被前面排除，这里不会再误判
+    if (headerCount === 2) {
+      const hasStatKeyword = /数量 | 统计 | 合计/.test(headerText);
+      if (hasStatKeyword) {
+        return 'bar';
+      }
+      // 第二列是数值，第一列是分类标签（且不是能力统计），也适合柱状图
+      if (numericColumns.length === 1 && labelColumns.length === 1) {
+        return 'bar';
+      }
+    }
+
+    // 默认表格
+    return 'table';
+  }
+
+  /**
+   * 提取图表数据
+   */
+  private extractChartData(reportData: { headers?: string[]; rows?: any[][] }): { labels: string[]; datasets: { label: string; data: number[]; backgroundColor: string[]; borderColor: string[] }[] } {
+    const labels: string[] = [];
+    const dataValues: number[] = [];
+    const headers = reportData.headers || [];
+    const rows = reportData.rows || [];
+
+    rows.forEach(row => {
+      // 第一列作为标签
+      if (row.length > 0) {
+        labels.push(String(row[0]));
+      }
+      // 第二列作为数值
+      if (row.length > 1) {
+        const cellStr = String(row[1]).replace(/[^0-9.-]/g, '');
+        dataValues.push(parseFloat(cellStr) || 0);
+      }
+    });
+
+    // 生成颜色
+    const colors = this.generateChartColors(dataValues.length);
+
+    return {
+      labels,
+      datasets: [{
+        label: headers[1] || '数值',
+        data: dataValues,
+        backgroundColor: colors.background,
+        borderColor: colors.border
+      }]
+    };
+  }
+
+  /**
+   * 生成图表颜色
+   */
+  private generateChartColors(count: number): { background: string[]; border: string[] } {
+    // 科技蓝渐变色系
+    const baseColors = [
+      { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgba(59, 130, 246, 1)' },
+      { bg: 'rgba(139, 92, 246, 0.8)', border: 'rgba(139, 92, 246, 1)' },
+      { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgba(16, 185, 129, 1)' },
+      { bg: 'rgba(245, 158, 11, 0.8)', border: 'rgba(245, 158, 11, 1)' },
+      { bg: 'rgba(236, 72, 153, 0.8)', border: 'rgba(236, 72, 153, 1)' },
+      { bg: 'rgba(20, 184, 166, 0.8)', border: 'rgba(20, 184, 166, 1)' },
+      { bg: 'rgba(99, 102, 241, 0.8)', border: 'rgba(99, 102, 241, 1)' },
+      { bg: 'rgba(248, 113, 113, 0.8)', border: 'rgba(248, 113, 113, 1)' },
+      { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgba(34, 197, 94, 1)' },
+      { bg: 'rgba(234, 179, 8, 0.8)', border: 'rgba(234, 179, 8, 1)' },
+    ];
+
+    const background: string[] = [];
+    const border: string[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const color = baseColors[i % baseColors.length];
+      background.push(color.bg);
+      border.push(color.border);
+    }
+
+    return { background, border };
+  }
+
+  /**
+   * 在气泡内渲染报表
+   */
+  renderReportInBubble(report: { type: string; data: { type?: string; headers?: string[]; rows?: any[][]; summary?: string; data?: { headers?: string[]; rows?: any[][]; summary?: string } } }): void {
+    if (!this.bubbleEl) return;
+
+    console.log('[StreamingMessage] renderReportInBubble called with:', JSON.stringify(report, null, 2));
+
+    // 处理嵌套的 data 结构
+    let reportData = report.data;
+    if (report.data && report.data.data) {
+      reportData = report.data.data;
+    }
+
+    if (!reportData || !reportData.headers || !reportData.rows) {
+      console.log('[StreamingMessage] No valid report data to render');
+      return;
+    }
+
+    const apiReportType = report.data?.type || 'table';
+
+    // 自动判断图表类型（根据数据内容和语义分析）
+    const chartType = this.determineChartType(reportData);
+
+    // 详细日志，便于调试
+    console.log('[StreamingMessage] Chart Type Determination:', {
+      apiSuggestType: apiReportType,
+      determinedType: chartType,
+      dataInfo: {
+        rowCount: reportData.rows.length,
+        headerCount: reportData.headers.length,
+        headers: reportData.headers,
+        firstRow: reportData.rows[0]
+      },
+      ruleMatch: {
+        isSingleRecord: reportData.rows.length === 1,
+        isMultiColumn: reportData.headers.length > 4,
+        hasDetailKeyword: /资源 | 单位 | 摄像 | 姓名 | 电话 | 职务 | 状态 | 地址 | 型号 | 负责人 | 联系方式/.test(
+          reportData.headers.join(' ')
+        ),
+        hasCapacityKeyword: /能力 | 抽排 | 泵车 | 装机 | 功率 | 台数 |m3| 立方米 | 公顷 | 亩/.test(
+          reportData.headers.join(' ')
+        ),
+        isCapacityFormat: reportData.headers.length === 2 && reportData.headers[0] === '类型',
+        hasStatKeyword: /数量 | 统计 | 合计/.test(
+          reportData.headers.join(' ')
+        ),
+        hasPercentKeyword: /占比 | 比例 | 百分比 | 份额 | 构成/.test(
+          [...reportData.headers, ...reportData.rows.flat()].join(' ').toLowerCase()
+        ),
+        hasTimeKeyword: /时间 | 日期 | 年份 | 月份 | 季度 | 趋势 | 变化/.test(
+          [...reportData.headers, ...reportData.rows.flat()].join(' ').toLowerCase()
+        )
+      }
+    });
+
+    // 创建报表容器
+    const reportEl = document.createElement('div');
+    reportEl.className = 'chat-report-container';
+    reportEl.style.marginTop = '12px';
+
+    if (chartType === 'bar' || chartType === 'pie' || chartType === 'line') {
+      // 渲染图表
+      const chartWrapper = document.createElement('div');
+      chartWrapper.className = 'chat-chart-wrapper';
+      chartWrapper.style.cssText = 'position: relative; height: 300px; width: 100%; margin-bottom: 12px;';
+
+      const canvas = document.createElement('canvas');
+      canvas.id = `chart-${this.message.id}`;
+      chartWrapper.appendChild(canvas);
+      reportEl.appendChild(chartWrapper);
+
+      // 获取图表数据
+      const chartData = this.extractChartData(reportData);
+
+      // 延迟渲染图表，确保 DOM 已插入
+      setTimeout(() => {
+        const ctx = canvas.getContext('2d');
+        if (ctx && (window as any).Chart) {
+          const chartConfig = {
+            type: chartType,
+            data: chartData,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: chartType === 'pie' ? 'bottom' : 'top',
+                  labels: {
+                    color: '#64748B',
+                    font: { size: 12 }
+                  }
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                  titleColor: '#F8FAFC',
+                  bodyColor: '#F8FAFC',
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: true
+                }
+              },
+              scales: chartType !== 'pie' ? {
+                x: {
+                  ticks: { color: '#64748B', font: { size: 11 } },
+                  grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: '#64748B', font: { size: 11 } },
+                  grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                }
+              } : {}
+            }
+          };
+
+          try {
+            new (window as any).Chart(ctx, chartConfig);
+            console.log('[StreamingMessage] Chart created successfully');
+          } catch (e) {
+            console.error('[StreamingMessage] Failed to create chart:', e);
+          }
+        } else {
+          console.warn('[StreamingMessage] Chart.js not available, falling back to table');
+          // 如果 Chart.js 不可用，回退到表格
+          this.renderTable(reportData, reportEl);
+        }
+      }, 100);
+
+      // 汇总信息
+      if (reportData.summary) {
+        const summaryEl = document.createElement('div');
+        summaryEl.className = 'chat-report-summary';
+        summaryEl.innerHTML = reportData.summary;
+        reportEl.appendChild(summaryEl);
+      }
+    } else if (chartType === 'card') {
+      // 卡片式展示
+      const cardsContainer = document.createElement('div');
+      cardsContainer.className = 'chat-report-cards';
+      reportData.rows.forEach((row: any[]) => {
+        const card = document.createElement('div');
+        card.className = 'chat-report-card';
+        row.forEach((cell: any, index: number) => {
+          const label = reportData.headers?.[index] || '';
+          const cellDiv = document.createElement('div');
+          cellDiv.className = 'chat-report-card-item';
+          if (label) {
+            const labelEl = document.createElement('span');
+            labelEl.className = 'chat-report-card-label';
+            labelEl.textContent = label;
+            cellDiv.appendChild(labelEl);
+          }
+          const valueEl = document.createElement('span');
+          valueEl.className = 'chat-report-card-value';
+          valueEl.textContent = cell !== null && cell !== undefined ? String(cell) : '-';
+          cellDiv.appendChild(valueEl);
+          card.appendChild(cellDiv);
+        });
+        cardsContainer.appendChild(card);
+      });
+      reportEl.appendChild(cardsContainer);
+
+      // 汇总信息
+      if (reportData.summary) {
+        const summaryEl = document.createElement('div');
+        summaryEl.className = 'chat-report-summary';
+        summaryEl.innerHTML = reportData.summary;
+        reportEl.appendChild(summaryEl);
+      }
+    } else {
+      // 默认表格展示
+      this.renderTable(reportData, reportEl);
+    }
+
+    // 将报表插入到气泡内容后面
+    this.bubbleEl.appendChild(reportEl);
+    this.chatPanel.scrollToBottom();
+  }
+
+  /**
+   * 渲染表格
+   */
+  private renderTable(reportData: { headers?: string[]; rows?: any[][]; summary?: string }, reportEl: HTMLElement): void {
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'chat-report-table-wrapper';
+
+    const table = document.createElement('table');
+    table.className = 'chat-report-table';
+
+    // 表头
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    if (reportData.headers) {
+      reportData.headers.forEach(header => {
+        const th = document.createElement('th');
+        th.innerHTML = header;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+    }
+
+    // 表体
+    const tbody = document.createElement('tbody');
+    if (reportData.rows) {
+      reportData.rows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          if (cell !== null && cell !== undefined) {
+            const cellStr = String(cell);
+            if (!isNaN(Number(cellStr)) && cellStr.trim() !== '') {
+              const numVal = Number(cellStr);
+              if (Number.isInteger(numVal)) {
+                td.textContent = numVal.toLocaleString('zh-CN');
+              } else {
+                td.textContent = numVal.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+              }
+              td.className = 'chat-report-table-cell-number';
+            } else {
+              td.innerHTML = cellStr;
+            }
+          } else {
+            td.textContent = '-';
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+    table.appendChild(tbody);
+    tableWrapper.appendChild(table);
+    reportEl.appendChild(tableWrapper);
+
+    // 汇总信息
+    if (reportData.summary) {
+      const summaryEl = document.createElement('div');
+      summaryEl.className = 'chat-report-summary';
+      summaryEl.innerHTML = reportData.summary;
+      reportEl.appendChild(summaryEl);
+    }
+  }
+
+  end(): void {
+    if (this.bubbleEl) {
+      // 移除光标
+      const cursor = this.bubbleEl.querySelector('.typing-cursor');
+      cursor?.remove();
+    }
+
+    // 添加操作按钮
+    if (this.actionsEl && this.messageEl) {
+      console.log('[StreamingMessage] end() called, adding action buttons');
+      const actionsContainer = (this.chatPanel as any).createMessageActions(this.message) as HTMLElement;
+      console.log('[StreamingMessage] actionsContainer created:', actionsContainer);
+      this.actionsEl.parentNode?.replaceChild(actionsContainer, this.actionsEl);
+      console.log('[StreamingMessage] actionsEl replaced');
+    }
+  }
+}
+
 export interface ChatPanelOptions {
   theme?: 'blue' | 'green' | 'purple';
   title?: string;
@@ -569,7 +1092,6 @@ export class ChatPanel {
       .message-time {
         font-size: 11px;
         color: var(--chat-text-light);
-        margin-top: 6px;
         padding: 0 4px;
         display: flex;
         align-items: center;
@@ -578,6 +1100,59 @@ export class ChatPanel {
 
       .message.user .message-time {
         justify-content: flex-end;
+      }
+
+      .message-meta {
+        display: flex;
+        align-items: center;
+        margin-top: 6px;
+        gap: 4px;
+      }
+
+      /* 消息操作按钮 */
+      .message-actions {
+        display: flex;
+        gap: 4px;
+        margin-left: 8px;
+      }
+
+      .message-action-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        padding: 0;
+        color: var(--chat-text-light);
+      }
+
+      .message-action-btn:hover {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--chat-primary);
+      }
+
+      .message-action-btn:active {
+        transform: scale(0.9);
+      }
+
+      .message-action-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .message-action-btn.playing {
+        color: var(--chat-primary);
+        animation: playingPulse 0.6s ease-in-out infinite;
+      }
+
+      @keyframes playingPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
       }
 
       /* Markdown 样式 */
@@ -761,6 +1336,169 @@ export class ChatPanel {
 
       .chat-panel.resizing .resize-handle {
         opacity: 1;
+      }
+
+      /* 流式输出光标 */
+      .typing-cursor {
+        display: inline-block;
+        color: var(--chat-primary);
+        animation: cursorBlink 1s step-start infinite;
+        font-weight: bold;
+        margin-left: 2px;
+      }
+
+      @keyframes cursorBlink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+
+      /* 报表容器样式 */
+      .chat-report-container {
+        margin: 16px 0;
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        border: 1px solid var(--chat-border);
+        animation: fadeIn 0.4s ease;
+      }
+
+      .chat-report-container + .chat-report-container {
+        margin-top: 12px;
+      }
+
+      .chat-report-table-wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-radius: 8px;
+      }
+
+      .chat-chart-wrapper {
+        position: relative;
+        height: 300px;
+        width: 100%;
+      }
+
+      .chat-report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        min-width: 400px;
+      }
+
+      .chat-report-table thead {
+        background: linear-gradient(135deg, var(--chat-primary), var(--chat-primary-dark));
+        color: white;
+      }
+
+      .chat-report-table th {
+        padding: 14px 16px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        white-space: nowrap;
+      }
+
+      .chat-report-table tbody tr {
+        transition: all 0.2s ease;
+      }
+
+      .chat-report-table tbody tr:nth-child(even) {
+        background-color: rgba(248, 250, 252, 0.6);
+      }
+
+      .chat-report-table tbody tr:nth-child(odd) {
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+
+      .chat-report-table tbody tr:hover {
+        background-color: rgba(59, 130, 246, 0.08);
+        transform: scale(1.001);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      .chat-report-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(30, 41, 59, 0.08);
+        color: var(--chat-text);
+      }
+
+      .chat-report-table-cell-number {
+        text-align: right;
+        font-family: 'SF Mono', Monaco, Consolas, monospace;
+        font-size: 13px;
+        color: var(--chat-primary-dark);
+        font-weight: 500;
+      }
+
+      .chat-report-table tbody tr:last-child td {
+        border-bottom: 2px solid var(--chat-primary);
+      }
+
+      .chat-report-summary {
+        margin-top: 16px;
+        padding: 14px 16px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.12));
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--chat-text);
+        border-left: 4px solid var(--chat-primary);
+        line-height: 1.6;
+      }
+
+      /* 卡片式报表 */
+      .chat-report-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      .chat-report-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.8));
+        border: 1px solid var(--chat-border);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+      }
+
+      .chat-report-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+        border-color: var(--chat-primary-light);
+      }
+
+      .chat-report-card-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .chat-report-card-label {
+        font-size: 12px;
+        color: var(--chat-text-light);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .chat-report-card-value {
+        font-size: 18px;
+        color: var(--chat-text);
+        font-weight: 600;
+        font-family: 'SF Mono', Monaco, Consolas, monospace;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     `;
     this.shadow.appendChild(style);
@@ -1001,6 +1739,24 @@ export class ChatPanel {
   }
 
   /**
+   * 从指定索引开始移除消息（用于重试功能）
+   */
+  removeMessagesFromIndex(index: number): void {
+    // 从数据数组中移除
+    const removedMessages = this.messages.splice(index);
+
+    // 从 DOM 中移除对应的消息元素
+    if (this.messagesContainer) {
+      const messageElements = this.messagesContainer.querySelectorAll('.message');
+      for (let i = index; i < messageElements.length; i++) {
+        messageElements[i].remove();
+      }
+    }
+
+    console.log('[ChatPanel] Removed messages from index:', index, removedMessages);
+  }
+
+  /**
    * 渲染消息
    */
   private renderMessage(message: Message): void {
@@ -1020,11 +1776,24 @@ export class ChatPanel {
 
     messageEl.appendChild(bubble);
 
+    // 元信息容器（时间和操作按钮）
+    const metaEl = createElement('div', 'message-meta');
+
     // 时间
     const timeEl = createElement('div', 'message-time');
     timeEl.textContent = this.formatTime(message.timestamp);
-    messageEl.appendChild(timeEl);
+    metaEl.appendChild(timeEl);
 
+    // 为 assistant 消息添加操作按钮
+    if (message.type === 'assistant' || message.type === 'system') {
+      console.log('[ChatPanel] Adding action buttons for assistant message');
+      const actionsEl = this.createMessageActions(message);
+      metaEl.appendChild(actionsEl);
+    } else {
+      console.log('[ChatPanel] Skipping action buttons for message type:', message.type);
+    }
+
+    messageEl.appendChild(metaEl);
     this.messagesContainer.appendChild(messageEl);
   }
 
@@ -1041,10 +1810,191 @@ export class ChatPanel {
   /**
    * 滚动到底部
    */
-  private scrollToBottom(): void {
+  scrollToBottom(): void {
     if (this.messagesContainer) {
       this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
+  }
+
+  /**
+   * 创建流式消息（用于流式输出）
+   */
+  createStreamingMessage(): StreamingMessage {
+    return new StreamingMessage(this);
+  }
+
+  /**
+   * 创建消息操作按钮（语音播放、复制、重试）
+   */
+  private createMessageActions(message: Message): HTMLElement {
+    console.log('[ChatPanel] createMessageActions called for message:', message.type, message.id);
+    const actionsEl = createElement('div', 'message-actions');
+    const robot = document.getElementById('robot') as any;
+
+    // 语音播放按钮
+    const playBtn = createElement('button', 'message-action-btn') as HTMLButtonElement;
+    const playIcon = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>
+    `;
+    const stopIcon = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      </svg>
+    `;
+    playBtn.innerHTML = playIcon;
+    playBtn.title = '语音播放';
+
+    // 检查是否正在播放的定时器
+    let playCheckTimer: ReturnType<typeof setInterval> | null = null;
+
+    // 更新播放按钮状态
+    const updatePlayButton = () => {
+      const isSpeaking = robot?.speechManager?.getIsSpeaking?.();
+      if (isSpeaking) {
+        playBtn.innerHTML = stopIcon;
+        playBtn.classList.add('playing');
+        playBtn.title = '停止播放';
+      } else {
+        playBtn.innerHTML = playIcon;
+        playBtn.classList.remove('playing');
+        playBtn.title = '语音播放';
+      }
+    };
+
+    // 启动状态检查定时器
+    const startPlayCheck = () => {
+      if (playCheckTimer) clearInterval(playCheckTimer);
+      playCheckTimer = setInterval(() => {
+        updatePlayButton();
+        // 如果已经停止播放，清除定时器
+        const isSpeaking = robot?.speechManager?.getIsSpeaking?.();
+        if (!isSpeaking && playCheckTimer) {
+          clearInterval(playCheckTimer);
+          playCheckTimer = null;
+        }
+      }, 200);
+    };
+
+    playBtn.addEventListener('click', () => {
+      const isSpeaking = robot?.speechManager?.getIsSpeaking?.();
+
+      if (isSpeaking) {
+        // 停止播放
+        if (robot && typeof robot.stopSpeaking === 'function') {
+          robot.stopSpeaking();
+        }
+        // 立即更新按钮
+        playBtn.innerHTML = playIcon;
+        playBtn.classList.remove('playing');
+        playBtn.title = '语音播放';
+        if (playCheckTimer) {
+          clearInterval(playCheckTimer);
+          playCheckTimer = null;
+        }
+      } else {
+        // 开始播放
+        if (robot && typeof robot.speak === 'function') {
+          robot.speak(message.content);
+        }
+        // 启动状态检查
+        startPlayCheck();
+      }
+    });
+    actionsEl.appendChild(playBtn);
+
+    // 复制按钮
+    const copyBtn = createElement('button', 'message-action-btn') as HTMLButtonElement;
+    copyBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+    `;
+    copyBtn.title = '复制内容';
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(message.content);
+        copyBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        `;
+        setTimeout(() => {
+          copyBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          `;
+        }, 2000);
+      } catch (err) {
+        console.error('复制失败:', err);
+      }
+    });
+    actionsEl.appendChild(copyBtn);
+
+    // 重试按钮
+    const retryBtn = createElement('button', 'message-action-btn') as HTMLButtonElement;
+    retryBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+      </svg>
+    `;
+    retryBtn.title = '重新提交';
+    retryBtn.addEventListener('click', () => {
+      console.log('[ChatPanel] Retry button clicked, message id:', message.id);
+      console.log('[ChatPanel] All messages:', this.messages);
+
+      // 找到对应的助手消息索引
+      const messageIndex = this.messages.findIndex(m => m.id === message.id);
+      console.log('[ChatPanel] Assistant message index:', messageIndex);
+
+      // 向前查找最近的用户消息
+      let userMessageIndex = -1;
+      let userMessage: Message | null = null;
+
+      for (let i = messageIndex - 1; i >= 0; i--) {
+        if (this.messages[i].type === 'user') {
+          userMessageIndex = i;
+          userMessage = this.messages[i];
+          break;
+        }
+      }
+
+      console.log('[ChatPanel] Found user message at index:', userMessageIndex, userMessage);
+
+      if (userMessage && userMessageIndex >= 0) {
+        // 清除从用户消息之后的所有消息（保留用户消息）
+        this.removeMessagesFromIndex(userMessageIndex + 1);
+
+        // 将用户消息重新填入输入框并发送
+        const robot = document.getElementById('robot') as any;
+        console.log('[ChatPanel] Robot element:', robot, 'sendMessage exists:', typeof robot?.sendMessage === 'function');
+
+        if (robot && typeof robot.sendMessage === 'function') {
+          robot.sendMessage(userMessage.content);
+        } else {
+          // 备用方案：通过输入框重新发送
+          console.log('[ChatPanel] Robot sendMessage not available, using fallback');
+          if (this.inputElement) {
+            this.inputElement.value = userMessage.content;
+            if (this.sendButton) {
+              this.sendButton.click();
+            }
+          }
+        }
+      } else {
+        console.warn('[ChatPanel] Could not find previous user message for retry');
+      }
+    });
+    actionsEl.appendChild(retryBtn);
+
+    return actionsEl;
   }
 
   /**
@@ -1197,6 +2147,133 @@ export class ChatPanel {
   setTypingState(isTyping: boolean): void {
     const panel = this.shadow.querySelector('.chat-panel');
     panel?.classList.toggle('typing', isTyping);
+  }
+
+  /**
+   * 渲染报表数据
+   */
+  renderReport(report: { type: string; data: { type?: string; headers?: string[]; rows?: any[][]; summary?: string; data?: { headers?: string[]; rows?: any[][]; summary?: string } } }): void {
+    console.log('[ChatPanel] renderReport called with:', JSON.stringify(report, null, 2));
+
+    // 处理嵌套的 data 结构：report.data.data
+    let reportData = report.data;
+    if (report.data && report.data.data) {
+      reportData = report.data.data;
+    }
+
+    if (!reportData) {
+      console.log('[ChatPanel] No report data to render');
+      return;
+    }
+
+    console.log('[ChatPanel] Using reportData:', reportData);
+
+    // 移除已存在的报表容器
+    const existingReport = this.shadow.querySelector('.chat-report-container');
+    if (existingReport) {
+      existingReport.remove();
+    }
+
+    // 使用 this.messagesContainer 而不是 querySelector
+    if (!this.messagesContainer) {
+      console.log('[ChatPanel] messagesContainer is null');
+      return;
+    }
+
+    // 创建报表容器
+    const reportEl = createElement('div', 'chat-report-container');
+
+    // 根据类型渲染不同的图表
+    const reportType = report.data?.type || 'table';
+    console.log('[ChatPanel] Report type:', reportType);
+
+    if (reportType === 'table' || reportType === 'stat' || reportType === 'info') {
+      if (reportData.headers && reportData.rows) {
+        // 渲染表格
+        const tableWrapper = createElement('div', 'chat-report-table-wrapper');
+
+        const table = document.createElement('table');
+        table.className = 'chat-report-table';
+
+        // 表头
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        reportData.headers.forEach(header => {
+          const th = document.createElement('th');
+          th.innerHTML = header; // 支持 HTML
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // 表体
+        const tbody = document.createElement('tbody');
+        reportData.rows.forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach(cell => {
+            const td = document.createElement('td');
+            if (cell !== null && cell !== undefined) {
+              // 如果是数字且是数值列，添加格式化
+              const cellStr = String(cell);
+              if (!isNaN(Number(cellStr)) && cellStr.trim() !== '') {
+                // 数字格式化
+                const numVal = Number(cellStr);
+                if (Number.isInteger(numVal)) {
+                  td.textContent = numVal.toLocaleString('zh-CN');
+                } else {
+                  td.textContent = numVal.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+                }
+                td.className = 'chat-report-table-cell-number';
+              } else {
+                td.innerHTML = cellStr; // 支持 HTML
+              }
+            } else {
+              td.textContent = '-';
+            }
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tableWrapper.appendChild(table);
+        reportEl.appendChild(tableWrapper);
+      }
+
+      // 渲染汇总信息
+      if (reportData.summary) {
+        const summaryEl = createElement('div', 'chat-report-summary');
+        summaryEl.innerHTML = reportData.summary; // 支持 HTML
+        reportEl.appendChild(summaryEl);
+      }
+    } else if (reportType === 'card') {
+      // 卡片式展示
+      if (reportData.rows) {
+        const cardsContainer = createElement('div', 'chat-report-cards');
+        reportData.rows.forEach((row: any[]) => {
+          const card = createElement('div', 'chat-report-card');
+          row.forEach((cell: any, index: number) => {
+            const label = reportData.headers?.[index] || '';
+            const cellDiv = createElement('div', 'chat-report-card-item');
+            if (label) {
+              const labelEl = createElement('span', 'chat-report-card-label');
+              labelEl.textContent = label;
+              cellDiv.appendChild(labelEl);
+            }
+            const valueEl = createElement('span', 'chat-report-card-value');
+            valueEl.textContent = cell !== null && cell !== undefined ? String(cell) : '-';
+            cellDiv.appendChild(valueEl);
+            card.appendChild(cellDiv);
+          });
+          cardsContainer.appendChild(card);
+        });
+        reportEl.appendChild(cardsContainer);
+      }
+    }
+
+    // 插入到消息列表下方
+    console.log('[ChatPanel] Appending report to messagesContainer');
+    this.messagesContainer.appendChild(reportEl);
+    this.scrollToBottom();
   }
 
   /**
