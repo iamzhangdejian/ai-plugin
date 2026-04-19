@@ -318,6 +318,35 @@ function toggleLanguageDropdown() {
   }
 }
 
+/**
+ * 切换移动端菜单
+ */
+function toggleMobileMenu() {
+  const menu = document.getElementById('navMobileMenu');
+  const toggle = document.querySelector('.nav-mobile-toggle');
+  if (menu) {
+    menu.classList.toggle('open');
+  }
+  if (toggle) {
+    toggle.classList.toggle('open');
+  }
+}
+
+// 暴露到全局作用域（因为使用了 type="module"）
+window.toggleMobileMenu = toggleMobileMenu;
+
+// 点击页面其他地方关闭移动菜单
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('navMobileMenu');
+  const toggle = document.querySelector('.nav-mobile-toggle');
+  if (menu && menu.classList.contains('open')) {
+    if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+      menu.classList.remove('open');
+      if (toggle) toggle.classList.remove('open');
+    }
+  }
+});
+
 // ==================== API 配置管理 ====================
 
 /**

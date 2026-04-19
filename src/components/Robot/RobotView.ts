@@ -42,18 +42,45 @@ export class RobotView {
       options: this.options
     });
 
-    // 设置容器样式
-    this.container.style.setProperty('--robot-size', `${this.options.size}px`);
+    // 设置容器样式 - 优先使用 CSS 变量，其次使用 options.size
+    const size = this.container.parentElement?.classList.contains('embedded')
+      ? this.options.size
+      : this.options.size;
+    this.container.style.setProperty('--robot-size', `${size}px`);
 
     // 创建 3D 机器人
     this.robot3D = new Robot3D(this.container, {
       color: this.getThemeColor(),
-      size: this.options.size,
+      size: size,
     });
 
     console.log('[RobotView] Robot3D created, canvas:', this.container.querySelector('canvas'));
 
     this.updateState(this.state);
+
+    // 监听容器大小变化
+    this.observeContainerResize();
+  }
+
+  /**
+   * 监听容器大小变化
+   */
+  private observeContainerResize(): void {
+    if (!('ResizeObserver' in window)) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        // ResizeObserver 会自动触发 Three.js 的 handleResize
+        // 因为 Robot3D 已经监听了 window resize 事件
+        console.log('[RobotView] Container resized:', { width, height });
+      }
+    });
+
+    observer.observe(this.container);
+
+    // 保存观察者引用以便清理
+    (this as any)._resizeObserver = observer;
   }
 
   /**
@@ -138,6 +165,11 @@ export class RobotView {
    * 销毁实例
    */
   destroy(): void {
+    // 停止 ResizeObserver
+    if ((this as any)._resizeObserver) {
+      (this as any)._resizeObserver.disconnect();
+      (this as any)._resizeObserver = null;
+    }
     if (this.robot3D) {
       this.robot3D.destroy();
       this.robot3D = null;

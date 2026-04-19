@@ -38,11 +38,10 @@ export class Robot {
     const isShadowRoot = container instanceof ShadowRoot;
     this.container = (isShadowRoot ? container.host : container) as HTMLElement;
 
-    // 对于 embedded 模式，不使用 Shadow DOM，直接在 Light DOM 中创建
-    // 这样 position: fixed 才能正确相对于 viewport 定位
     const isEmbedded = options.embedded ?? false;
+    // 对于 embedded 模式，使用传入的 Shadow DOM（来自 AIRobotElement）
+    // 这样 wrapper 才能正确渲染在 Shadow DOM 内部
     if (isEmbedded) {
-      // 在 Light DOM 中，直接使用容器本身
       this.shadow = container instanceof ShadowRoot ? container : (container as HTMLElement).shadowRoot || container.attachShadow({ mode: 'open' });
     } else {
       this.shadow = isShadowRoot ? container : container.attachShadow({ mode: 'open' });
@@ -79,7 +78,7 @@ export class Robot {
     this.stateMachine.setState(this.options.visible ? 'idle' : 'hidden');
 
     // 对于 embedded 模式，不在此处设置位置，由 AIRobotElement 异步设置
-    // 因为 wrapper 在 document.body 中，需要等待布局完成后才能正确计算位置
+    // 因为 wrapper 使用 position: absolute，需要等待布局完成后才能正确计算位置
     if (!this.options.embedded) {
       if (this.options.initialPosition && (this.options.initialPosition.x !== 0 || this.options.initialPosition.y !== 0)) {
         this.setPosition(this.options.initialPosition.x, this.options.initialPosition.y);
@@ -95,7 +94,8 @@ export class Robot {
   private createStyles(): void {
     const style = createElement('style');
 
-    // 对于 embedded 模式，不使用 :host 选择器
+    // 对于 embedded 模式，:host 由 AIRobotElement 控制，我们只关心 wrapper 的样式
+    // non-embedded 模式使用默认的 :host 样式
     const hostStyles = this.options.embedded ? '' : `
       :host {
         all: initial;
@@ -111,24 +111,33 @@ export class Robot {
 
     style.textContent = `${hostStyles}
       .ai-robot-wrapper {
+        /* 响应式尺寸 - 默认移动端 */
+        --robot-size: 80px;
+        --robot-size-hover: 90px;
+
         position: fixed;
         left: 20px;
         top: 50%;
         transform: translateY(-50%);
-        width: 120px;
-        height: 120px;
+        width: var(--robot-size);
+        height: var(--robot-size);
         cursor: grab;
         touch-action: none;
         user-select: none;
         -webkit-user-select: none;
         z-index: 999999;
         overflow: visible;
+        transition: width 0.3s ease, height 0.3s ease;
       }
 
+      /* 嵌入式模式 - 使用 position: fixed 相对于 viewport 定位 */
       .ai-robot-wrapper.embedded {
+        /* 嵌入式机器人响应式尺寸 */
+        --robot-size-embedded: 180px;
+
         position: fixed;
-        width: 250px;
-        height: 250px;
+        width: var(--robot-size-embedded);
+        height: var(--robot-size-embedded);
         cursor: pointer;
         left: 50%;
         top: 50%;
@@ -137,6 +146,31 @@ export class Robot {
         user-select: none;
         -webkit-user-select: none;
         z-index: 999999;
+        transition: width 0.3s ease, height 0.3s ease;
+      }
+
+      /* 平板适配 (≥768px) */
+      @media (min-width: 768px) {
+        .ai-robot-wrapper {
+          --robot-size: 100px;
+          --robot-size-hover: 115px;
+        }
+
+        .ai-robot-wrapper.embedded {
+          --robot-size-embedded: 220px;
+        }
+      }
+
+      /* 桌面适配 (≥1024px) */
+      @media (min-width: 1024px) {
+        .ai-robot-wrapper {
+          --robot-size: 120px;
+          --robot-size-hover: 140px;
+        }
+
+        .ai-robot-wrapper.embedded {
+          --robot-size-embedded: 250px;
+        }
       }
 
       .ai-robot-wrapper:active {
@@ -150,6 +184,13 @@ export class Robot {
 
       .ai-robot-wrapper.embedded.dragging {
         transform: scale(1.05) !important;
+      }
+
+      /* 移动端触摸友好的大按钮 */
+      @media (max-width: 480px) {
+        .ai-robot-wrapper {
+          --robot-size: 80px;
+        }
       }
 
       .ai-robot-canvas-container {
@@ -314,7 +355,8 @@ export class Robot {
       }
     `;
 
-    // 对于 embedded 模式，样式添加到 document head；否则添加到 Shadow DOM
+    // 对于 embedded 模式，wrapper 在 document.body 中，样式需要添加到 document.head
+    // 对于 non-embedded 模式，wrapper 在 shadow DOM 中，样式添加到 shadow DOM
     if (this.options.embedded) {
       document.head.appendChild(style);
       // 保存样式引用以便清理
@@ -347,8 +389,9 @@ export class Robot {
     const canvasContainer = createElement('div', 'ai-robot-canvas-container');
     wrapper.appendChild(canvasContainer);
 
-    // 对于 embedded 模式，将 wrapper 直接添加到 document.body
-    // 这样 position: fixed 才能相对于 viewport 正确定位，不受任何祖先元素影响
+    // 对于 embedded 模式，wrapper 需要添加到 document.body 而不是 shadow DOM
+    // 因为 AIRobotElement 本身被设置为 visibility: hidden，会隐藏 shadow DOM 内的所有内容
+    // 使用 position: fixed 可以让 wrapper 脱离文档流，相对于 viewport 定位
     if (this.options.embedded) {
       document.body.appendChild(wrapper);
     } else {
@@ -409,7 +452,11 @@ export class Robot {
       const newY = this.currentPos.y + dy + window.scrollY;
 
       // 边界检查 - 限制在视口内，确保机器人整体不超出屏幕边缘
-      const wrapperSize = this.options.embedded ? 360 : 180;
+      // 使用 CSS 变量获取当前尺寸
+      const computedStyle = getComputedStyle(wrapper);
+      const wrapperSize = parseInt(computedStyle.getPropertyValue('--robot-size')) ||
+                         parseInt(computedStyle.width) ||
+                         (this.options.embedded ? 360 : 180);
       const maxX = window.innerWidth - wrapperSize;
       const maxY = window.innerHeight - wrapperSize;
 
@@ -555,12 +602,12 @@ export class Robot {
   }
 
   /**
-   * 获取 wrapper 元素
+   * 获取 wrapper 元素（公开方法供外部访问）
    */
-  private getWrapper(): HTMLElement {
-    // 对于 embedded 模式，wrapper 在 document.body 中；否则在 Shadow DOM 中
+  getWrapper(): HTMLElement {
+    // 对于 embedded 模式，wrapper 在 document.body 中；否则在 shadow DOM 中
     if (this.options.embedded) {
-      const wrapper = document.querySelector('.ai-robot-wrapper.embedded') as HTMLElement;
+      const wrapper = document.body.querySelector('.ai-robot-wrapper.embedded') as HTMLElement;
       return wrapper;
     }
     const wrapper = this.shadow.querySelector('.ai-robot-wrapper') as HTMLElement;
@@ -600,14 +647,28 @@ export class Robot {
   /**
    * 设置位置
    */
-  setPosition(x: number, y: number): void {
+  setPosition(x: number, y: number, offsetY: number = 0): void {
     const wrapper = this.getWrapper();
     if (!wrapper) {
       console.error('[Robot] Wrapper not found in setPosition');
       return;
     }
-    wrapper.style.left = x + 'px';
-    wrapper.style.top = y + 'px';
+
+    // 获取机器人实际尺寸，计算中心点
+    const rect = wrapper.getBoundingClientRect();
+    const wrapperWidth = rect.width || wrapper.offsetWidth;
+    const wrapperHeight = rect.height || wrapper.offsetHeight;
+
+    console.log('[Robot] setPosition:', { x, y, wrapperWidth, wrapperHeight, rect, offsetY });
+
+    // 设置位置时减去机器人尺寸的一半，使机器人中心对准目标位置
+    const left = x - wrapperWidth / 2;
+    const top = y - wrapperHeight / 2 + offsetY;
+
+    console.log('[Robot] Calculated position:', { left, top });
+
+    wrapper.style.left = left + 'px';
+    wrapper.style.top = top + 'px';
     wrapper.style.right = 'auto';
     wrapper.style.transform = 'none';
   }
@@ -686,18 +747,18 @@ export class Robot {
     if (cleanup) {
       cleanup.forEach(fn => fn());
     }
+    const styleCleanup = this.callbacks.get('_style');
+    if (styleCleanup) {
+      styleCleanup.forEach(fn => fn());
+    }
     this.robotView.destroy();
     this.stateMachine.clearCallbacks();
     this.callbacks.clear();
 
-    // 对于 embedded 模式，移除 wrapper 元素；否则移除整个 container
-    if (this.options.embedded) {
-      const wrapper = this.getWrapper();
-      if (wrapper) {
-        wrapper.remove();
-      }
-    } else {
-      this.container.remove();
+    // 移除 wrapper 元素
+    const wrapper = this.getWrapper();
+    if (wrapper) {
+      wrapper.remove();
     }
   }
 }

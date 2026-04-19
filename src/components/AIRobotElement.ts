@@ -225,14 +225,38 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
         // 本次会话中有保存的位置，恢复它
         const savedPosition = this.loadSavedPosition();
         if (savedPosition) {
+          console.log('[AIRobotElement] Restoring saved position:', savedPosition);
           requestAnimationFrame(() => {
-            this.robot.setPosition(savedPosition.x, savedPosition.y);
+            // 添加垂直偏移量，向下移动 20px 使机器人视觉上居中
+            this.robot.setPosition(savedPosition.x, savedPosition.y, 20);
           });
         } else {
-          this.setInitialCenterPosition();
+          // 如果 sessionStorage 有标记但 localStorage 没有位置，重新计算中心位置
+          requestAnimationFrame(() => {
+            const container = this.parentElement;
+            if (container) {
+              const rect = container.getBoundingClientRect();
+              const centerX = rect.left + rect.width / 2;
+              const centerY = rect.top + rect.height / 2;
+              console.log('[AIRobotElement] Container rect:', rect, 'Center:', centerX, centerY);
+              // 添加垂直偏移量，向下移动 20px 使机器人视觉上居中
+              this.robot.setPosition(centerX, centerY, 20);
+            }
+          });
         }
       } else {
-        this.setInitialCenterPosition();
+        // 第一次加载时，计算容器中心位置
+        requestAnimationFrame(() => {
+          const container = this.parentElement;
+          if (container) {
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            console.log('[AIRobotElement] Container rect:', rect, 'Center:', centerX, centerY);
+            // 添加垂直偏移量，向下移动 20px 使机器人视觉上居中
+            this.robot.setPosition(centerX, centerY, 20);
+          }
+        });
       }
     }
 
@@ -627,50 +651,22 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   public resetToInitialPosition(): void {
     const isEmbedded = this.hasAttribute('embedded');
     if (isEmbedded) {
+      // 清除保存的位置
+      this.clearSavedPosition();
+      sessionStorage.removeItem('ai-robot-saved');
+
+      // 重新计算容器中心位置
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const container = document.getElementById('hero-robot-container');
-          if (container) {
-            const rect = container.getBoundingClientRect();
-            const robotWrapperSize = 250;
-            const verticalOffset = 50; // 向下偏移量
-
-            const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
-            const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + verticalOffset;
-
-            this.robot.setPosition(centerX, centerY);
-            // 清除保存的位置
-            this.clearSavedPosition();
-          }
-        });
-      });
-    }
-  }
-
-  /**
-   * 设置初始中心位置（页面加载时调用）
-   */
-  private setInitialCenterPosition(): void {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const container = document.getElementById('hero-robot-container');
+        const container = this.parentElement;
         if (container) {
           const rect = container.getBoundingClientRect();
-          const robotWrapperSize = 250;
-          const verticalOffset = 50; // 向下偏移量
-
-          const centerX = rect.left + (rect.width - robotWrapperSize) / 2;
-          const centerY = rect.top + (rect.height - robotWrapperSize) / 2 + verticalOffset;
-
-          this.robot.setPosition(centerX, centerY);
-
-          // 页面刷新后清除标记
-          if (document.documentElement.getAttribute('data-ai-robot-reset') === 'true') {
-            document.documentElement.removeAttribute('data-ai-robot-reset');
-          }
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          // 添加垂直偏移量，向下移动 20px 使机器人视觉上居中
+          this.robot.setPosition(centerX, centerY, 20);
         }
       });
-    });
+    }
   }
 
   destroy(): void {

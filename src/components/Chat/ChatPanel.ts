@@ -607,6 +607,9 @@ export class ChatPanel {
 
     style.textContent = `
       :host {
+        /* 响应式尺寸变量 */
+        --robot-size: 80px;
+
         --chat-primary: ${colors.primary};
         --chat-primary-light: ${colors.light};
         --chat-primary-dark: ${colors.dark};
@@ -631,7 +634,7 @@ export class ChatPanel {
 
       .chat-panel {
         position: absolute;
-        bottom: calc(160px + 16px);
+        bottom: calc(var(--robot-size) + 16px);
         right: 0;
         width: 360px;
         max-height: 900px;
@@ -1498,6 +1501,97 @@ export class ChatPanel {
         to {
           opacity: 1;
           transform: translateY(0);
+        }
+      }
+
+      /* ==================== 响应式样式 ==================== */
+      /* 移动端适配 (≤480px) */
+      @media (max-width: 480px) {
+        .chat-panel {
+          width: 90vw !important;
+          max-width: none !important;
+          right: 5vw !important;
+          left: 5vw !important;
+        }
+
+        .chat-panel.bubble-mode {
+          min-width: 90vw !important;
+        }
+
+        .message {
+          max-width: 90%;
+        }
+
+        .chat-send,
+        .chat-voice {
+          min-width: 48px;
+          min-height: 48px;
+        }
+      }
+
+      /* 平板适配 (≥768px) */
+      @media (min-width: 768px) {
+        .chat-panel {
+          width: 380px;
+        }
+      }
+
+      /* 桌面适配 (≥1024px) */
+      @media (min-width: 1024px) {
+        .chat-panel {
+          width: 400px;
+        }
+      }
+
+      /* 横屏模式优化 */
+      @media (max-height: 500px) and (orientation: landscape) {
+        .chat-panel {
+          max-height: 80vh !important;
+          width: 60vw !important;
+        }
+
+        .chat-messages {
+          max-height: 60vh !important;
+        }
+      }
+
+      /* 深色模式支持 */
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --chat-bg: #1E293B;
+          --chat-surface: #0F172A;
+          --chat-text: #E2E8F0;
+          --chat-text-light: #94A3B8;
+          --chat-border: rgba(255, 255, 255, 0.1);
+        }
+
+        .message.assistant .message-bubble {
+          background: #1E293B;
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input {
+          background: #0F172A;
+          color: #E2E8F0;
+        }
+      }
+
+      /* 减少动画偏好 */
+      @media (prefers-reduced-motion: reduce) {
+        .chat-panel,
+        .message,
+        .chat-close,
+        .chat-send,
+        .chat-voice {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      /* 安全区域适配（iPhone 刘海屏） */
+      @supports (padding: max(0px)) {
+        .chat-panel {
+          padding-bottom: max(0px, env(safe-area-inset-bottom));
         }
       }
     `;
