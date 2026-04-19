@@ -1676,9 +1676,13 @@ ai-robot::part(host) {
   .usage-card h3 {
     font-size: 1.25rem;
   }
+}
 
+/* 移动端表格优化 */
+@media (max-width: 768px) {
   .api-table {
     font-size: 0.85rem;
+    min-width: max-content;
   }
 
   .api-table th,
@@ -1686,10 +1690,11 @@ ai-robot::part(host) {
     padding: 10px 12px;
   }
 
-  /* 移动端表格滚动提示 */
+  /* 移动端表格滚动 */
   .api-table-wrapper {
-    margin: 1.5rem -16px;
+    margin: 1.5rem 0;
     border-radius: 12px;
+    max-width: 100%;
   }
 
   .api-table-wrapper::-webkit-scrollbar {
@@ -1713,6 +1718,12 @@ ai-robot::part(host) {
 
 /* 小屏手机 (≤480px) - 确保居中 */
 @media (max-width: 480px) {
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
   .hero-content {
     justify-items: center;
     justify-content: center;
