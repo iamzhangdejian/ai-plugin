@@ -72,6 +72,17 @@ body {
   gap: 0.5rem;
 }
 
+.nav-logo-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.nav-logo:hover .nav-logo-icon {
+  transform: scale(1.1);
+}
+
 .nav-links {
   display: flex;
   gap: 2rem;
@@ -1497,6 +1508,11 @@ ai-robot::part(host) {
 
   .nav-logo {
     font-size: 1.25rem;
+  }
+
+  .nav-logo-icon {
+    width: 26px;
+    height: 26px;
   }
 
   /* 隐藏桌面导航 */

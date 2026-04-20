@@ -41,7 +41,116 @@
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="nav-content">
-      <a href="#" class="nav-logo">🤖 AI Robot</a>
+      <a href="#" class="nav-logo">
+        <svg class="nav-logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- ===== 天线 ===== -->
+          <!-- 天线杆 (深蓝色金属) -->
+          <rect x="23.2" y="3" width="1.6" height="5" rx="0.8" fill="#1E3A5F" opacity="0.9"/>
+          <!-- 天线顶端发光球 -->
+          <circle cx="24" cy="2.8" r="2" fill="#00D4FF" opacity="0.85"/>
+          <circle cx="24" cy="2.8" r="1" fill="white" opacity="0.6"/>
+          <!-- 天线光晕 -->
+          <circle cx="24" cy="2.8" r="3" fill="#00D4FF" opacity="0.15"/>
+
+          <!-- ===== 头部 (球形太空头盔) ===== -->
+          <!-- 头部主体 (白色, clearcoat 光泽) -->
+          <ellipse cx="24" cy="17" rx="10" ry="9" fill="white"/>
+          <!-- 头部高光 -->
+          <ellipse cx="20" cy="13" rx="5" ry="4" fill="white" opacity="0.6"/>
+          <!-- 头部阴影 -->
+          <ellipse cx="24" cy="17" rx="10" ry="9" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="0.5"/>
+
+          <!-- ===== 面罩 (黑色太空头盔面罩) ===== -->
+          <path d="M15 17.5 Q15 15.5, 17.5 14.5 L30.5 14.5 Q33 15.5, 33 17.5 L33 19 Q33 21, 30.5 22 L17.5 22 Q15 21, 15 19 Z" fill="#0A0A15" opacity="0.85"/>
+          <!-- 面罩高光 -->
+          <path d="M16.5 16 Q17.5 14.8, 20 14.5 L28 14.5 Q30.5 14.8, 31.5 16" stroke="rgba(255,255,255,0.08)" stroke-width="0.5" fill="none"/>
+
+          <!-- ===== 颈部 ===== -->
+          <rect x="21" y="25.5" width="6" height="3" rx="2" fill="#E0E0E0" opacity="0.7"/>
+
+          <!-- ===== 身体 ===== -->
+          <!-- 身体主体 -->
+          <ellipse cx="24" cy="34" rx="12" ry="11" fill="white"/>
+          <!-- 身体高光 -->
+          <ellipse cx="20" cy="30" rx="6" ry="5" fill="white" opacity="0.5"/>
+          <!-- 身体阴影 -->
+          <ellipse cx="24" cy="34" rx="12" ry="11" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/>
+
+          <!-- ===== 胸部发光核心 ===== -->
+          <!-- 核心外环 -->
+          <circle cx="24" cy="33" r="4.5" fill="none" stroke="#00A8FF" stroke-width="1" opacity="0.4"/>
+          <!-- 核心主体 -->
+          <circle cx="24" cy="33" r="3.5" fill="#00D4FF" opacity="0.75"/>
+          <!-- 核心内圆 -->
+          <circle cx="24" cy="33" r="2" fill="white" opacity="0.85"/>
+          <!-- 核心高光点 -->
+          <circle cx="23" cy="32" r="0.8" fill="white" opacity="0.9"/>
+
+          <!-- ===== 眼睛 (太空头盔发光眼) ===== -->
+          <!-- 左眼 -->
+          <!-- 眼外光晕 -->
+          <ellipse cx="19.5" cy="18.5" rx="2.5" ry="3" fill="#00A8FF" opacity="0.2"/>
+          <!-- 眼白基底 -->
+          <ellipse cx="19.5" cy="18.5" rx="2" ry="2.5" fill="#E0F4FF" opacity="0.5"/>
+          <!-- 虹膜 (蓝色发光) -->
+          <ellipse cx="19.5" cy="18.5" rx="1.4" ry="1.8" fill="#00D4FF"/>
+          <!-- 瞳孔 (深蓝) -->
+          <ellipse cx="19.5" cy="18.5" rx="0.6" ry="0.8" fill="#0A3D5A"/>
+          <!-- 眼睛高光 -->
+          <circle cx="18.8" cy="18" r="0.5" fill="white" opacity="0.95"/>
+          <!-- 眼睛上高光 -->
+          <circle cx="20" cy="17.8" r="0.3" fill="white" opacity="0.5"/>
+
+          <!-- 右眼 -->
+          <!-- 眼外光晕 -->
+          <ellipse cx="28.5" cy="18.5" rx="2.5" ry="3" fill="#00A8FF" opacity="0.2"/>
+          <!-- 眼白基底 -->
+          <ellipse cx="28.5" cy="18.5" rx="2" ry="2.5" fill="#E0F4FF" opacity="0.5"/>
+          <!-- 虹膜 (蓝色发光) -->
+          <ellipse cx="28.5" cy="18.5" rx="1.4" ry="1.8" fill="#00D4FF"/>
+          <!-- 瞳孔 (深蓝) -->
+          <ellipse cx="28.5" cy="18.5" rx="0.6" ry="0.8" fill="#0A3D5A"/>
+          <!-- 眼睛高光 -->
+          <circle cx="27.8" cy="18" r="0.5" fill="white" opacity="0.95"/>
+          <!-- 眼睛上高光 -->
+          <circle cx="29" cy="17.8" r="0.3" fill="white" opacity="0.5"/>
+
+          <!-- 眼睑 (黑色, 太空头盔风格) -->
+          <ellipse cx="19.5" cy="17.2" rx="2.2" ry="0.5" fill="#0A0A15" opacity="0.3"/>
+          <ellipse cx="28.5" cy="17.2" rx="2.2" ry="0.5" fill="#0A0A15" opacity="0.3"/>
+
+          <!-- ===== 手臂 (侧面轮廓) ===== -->
+          <!-- 左臂 (上臂) -->
+          <ellipse cx="13" cy="32" rx="2.5" ry="5" fill="white" transform="rotate(15, 13, 32)"/>
+          <!-- 左臂关节 -->
+          <circle cx="11.5" cy="36" r="2" fill="#3A4A5A" opacity="0.7"/>
+          <!-- 左臂前臂 -->
+          <ellipse cx="10.5" cy="39" rx="2" ry="4" fill="white" transform="rotate(-8, 10.5, 39)"/>
+          <!-- 左手 -->
+          <circle cx="9.5" cy="42.5" r="2" fill="white"/>
+
+          <!-- 右臂 (上臂) -->
+          <ellipse cx="35" cy="32" rx="2.5" ry="5" fill="white" transform="rotate(-15, 35, 32)"/>
+          <!-- 右臂关节 -->
+          <circle cx="36.5" cy="36" r="2" fill="#3A4A5A" opacity="0.7"/>
+          <!-- 右臂前臂 -->
+          <ellipse cx="37.5" cy="39" rx="2" ry="4" fill="white" transform="rotate(8, 37.5, 39)"/>
+          <!-- 右手 -->
+          <circle cx="38.5" cy="42.5" r="2" fill="white"/>
+
+          <!-- ===== 腿部 ===== -->
+          <!-- 左腿 -->
+          <ellipse cx="20" cy="43" rx="3" ry="3" fill="white" opacity="0.9"/>
+          <!-- 左腿关节 -->
+          <circle cx="20" cy="45" r="1.5" fill="#3A4A5A" opacity="0.5"/>
+
+          <!-- 右腿 -->
+          <ellipse cx="28" cy="43" rx="3" ry="3" fill="white" opacity="0.9"/>
+          <!-- 右腿关节 -->
+          <circle cx="28" cy="45" r="1.5" fill="#3A4A5A" opacity="0.5"/>
+        </svg>
+        <span>AI Robot</span>
+      </a>
       <ul class="nav-links">
         <li><a href="#hero" data-i18n="nav.home">首页</a></li>
         <li><a href="#features" data-i18n="nav.features">特性</a></li>
