@@ -1681,6 +1681,13 @@ ai-robot::part(host) {
   .usage-card h3 {
     font-size: 1.25rem;
   }
+
+  .usage-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 24px;
+  }
 }
 
 /* 移动端表格优化 */
@@ -1764,6 +1771,11 @@ ai-robot::part(host) {
   .hero-buttons {
     justify-content: center;
     align-items: center;
+  }
+
+  .usage-grid {
+    max-width: 100%;
+    gap: 16px;
   }
 }
 

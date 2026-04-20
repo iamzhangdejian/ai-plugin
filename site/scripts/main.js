@@ -25,6 +25,30 @@ function isPageRefresh() {
   return false;
 }
 
+// ==================== 本地数据库 ====================
+
+/**
+ * 初始化本地 SQLite 数据库
+ * 使用 sql.js (WASM) + IndexedDB 持久化
+ */
+async function initDB() {
+  try {
+    localDB = await LocalDB.init();
+    window.localDB = localDB; // 暴露到全局供测试和外部访问
+    console.log('[LocalDB] Database initialized');
+    console.log('[LocalDB] Current data:\n', localDB.debug());
+  } catch (e) {
+    console.error('[LocalDB] Failed to initialize, falling back to mock:', e);
+    // Fallback: 如果数据库初始化失败，创建一个简单的内存模拟
+    localDB = {
+      _data: new Map(),
+      get(key) { return this._data.get(key) || null; },
+      set(key, value) { this._data.set(key, JSON.stringify(value)); },
+      delete(key) { this._data.delete(key); },
+    };
+  }
+}
+
 // ==================== 状态管理 ====================
 
 // API 配置状态
@@ -33,6 +57,9 @@ let apiConfig = {
   apiKey: '',
   apiEndpoint: ''
 };
+
+// 本地数据库 (sql.js + IndexedDB)
+let localDB = null;
 
 // ==================== 国际化 ====================
 
@@ -256,7 +283,7 @@ function applyTranslations(lang) {
  */
 function switchLanguage(lang) {
   // 获取当前语言
-  const currentLang = localStorage.getItem('ai-robot-lang') || 'zh';
+  const currentLang = localDB.get('ai-robot-lang') || 'zh';
 
   // 如果语言和当前已保存的相同，只关闭下拉框
   if (lang === currentLang) {
@@ -278,8 +305,8 @@ function switchLanguage(lang) {
     langText.textContent = lang === 'zh' ? '中文' : 'English';
   }
 
-  // 保存到 localStorage
-  localStorage.setItem('ai-robot-lang', lang);
+  // 保存到本地数据库
+  localDB.set('ai-robot-lang', lang);
 
   // 等待动画完成后刷新页面
   setTimeout(() => {
@@ -291,7 +318,7 @@ function switchLanguage(lang) {
  * 初始化语言
  */
 function initLanguage() {
-  const savedLang = localStorage.getItem('ai-robot-lang') || 'zh';
+  const savedLang = localDB.get('ai-robot-lang') || 'zh';
 
   // 设置语言按钮文本
   const langText = document.querySelector('.nav-language-text');
@@ -299,9 +326,14 @@ function initLanguage() {
     langText.textContent = savedLang === 'zh' ? '中文' : 'English';
   }
 
-  // 设置下拉框激活状态
+  // 设置桌面端下拉框激活状态
   document.querySelectorAll('.nav-language-item').forEach(item => {
     item.classList.toggle('active', item.dataset.lang === savedLang);
+  });
+
+  // 设置移动端语言按钮激活状态
+  document.querySelectorAll('.nav-mobile-lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === savedLang);
   });
 
   // 应用翻译
@@ -423,7 +455,7 @@ function hideStatus() {
  */
 function initApiConfig() {
   // 先检查用户选择的模式
-  const savedMode = localStorage.getItem('ai-robot-mode');
+  const savedMode = localDB.get('ai-robot-mode');
   if (savedMode === 'mock') {
     isMockMode = true;
     updateMockIndicator();
@@ -431,10 +463,10 @@ function initApiConfig() {
   }
 
   // 如果没有保存模式，检查是否有 API 配置
-  const saved = localStorage.getItem('ai-robot-config');
-  if (saved) {
+  const savedConfig = localDB.get('ai-robot-config');
+  if (savedConfig) {
     try {
-      apiConfig = JSON.parse(saved);
+      apiConfig = savedConfig;
       if (apiConfig.apiKey && apiConfig.apiEndpoint) {
         isMockMode = false;
         updateMockIndicator();
@@ -523,8 +555,8 @@ function selectMode(mode) {
  */
 function confirmMockMode() {
   isMockMode = true;
-  // 保存到 localStorage，覆盖之前的 API 配置选择
-  localStorage.setItem('ai-robot-mode', 'mock');
+  // 保存到本地数据库，覆盖之前的 API 配置选择
+  localDB.set('ai-robot-mode', 'mock');
   updateMockIndicator();
   updateRobotConfig();
   closeApiConfig();
@@ -573,9 +605,9 @@ function saveApiConfig(event) {
   }
 
   apiConfig = { apiKey, apiEndpoint };
-  localStorage.setItem('ai-robot-config', JSON.stringify(apiConfig));
+  localDB.set('ai-robot-config', apiConfig);
   // 保存模式选择为 API
-  localStorage.setItem('ai-robot-mode', 'api');
+  localDB.set('ai-robot-mode', 'api');
 
   isMockMode = false;
   updateMockIndicator();
@@ -652,8 +684,8 @@ function initSkinSwitcher() {
   console.log('[SkinSwitcher] Init, robot:', robot);
   console.log('[SkinSwitcher] robot.setSkin:', robot?.setSkin);
 
-  // 从 localStorage 加载皮肤偏好
-  const savedSkin = localStorage.getItem('ai-robot-skin');
+  // 从本地数据库加载皮肤偏好
+  const savedSkin = localDB.get('ai-robot-skin');
   const initialSkin = savedSkin || currentSkin;
 
   // 设置初始激活状态
@@ -684,8 +716,8 @@ function initSkinSwitcher() {
 
       currentSkin = newSkin;
 
-      // 保存到 localStorage
-      localStorage.setItem('ai-robot-skin', currentSkin);
+      // 保存到本地数据库
+      localDB.set('ai-robot-skin', currentSkin);
 
       // 触发发光效果
       if (typeof robot.showHintBubble === 'function') {
@@ -694,7 +726,7 @@ function initSkinSwitcher() {
     });
   });
 
-  // 如果从 localStorage 加载了皮肤，应用它
+  // 如果从本地数据库加载了皮肤，应用它
   if (savedSkin && savedSkin !== currentSkin) {
     const targetBtn = document.querySelector(`.skin-btn[data-skin="${savedSkin}"]`);
     if (targetBtn) {
@@ -760,7 +792,10 @@ function handlePageRefresh() {
 /**
  * 初始化所有功能
  */
-function init() {
+async function init() {
+  // 初始化本地数据库
+  await initDB();
+
   // 处理页面刷新
   handlePageRefresh();
 
