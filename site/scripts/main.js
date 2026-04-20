@@ -34,7 +34,22 @@ function isPageRefresh() {
 async function initDB() {
   try {
     localDB = await LocalDB.init();
-    window.localDB = localDB; // 暴露到全局供测试和外部访问
+    window.localDB = localDB;
+
+    // DB 加载完成后, 将 localStorage 中同步写入的值迁移到 localDB
+    // 这样后续读取以 localDB 为准, 保持数据源唯一
+    for (const key of SYNC_KEYS) {
+      const val = syncGet(key);
+      if (val !== null) {
+        localDB.set(key, val);
+      }
+    }
+    // 迁移 API 配置 (从 localStorage 的旧数据)
+    const oldConfig = syncGet('ai-robot-config');
+    if (oldConfig && !localDB.get('ai-robot-config')) {
+      localDB.set('ai-robot-config', oldConfig);
+    }
+
     console.log('[LocalDB] Database initialized');
     console.log('[LocalDB] Current data:\n', localDB.debug());
   } catch (e) {
@@ -60,6 +75,36 @@ let apiConfig = {
 
 // 本地数据库 (sql.js + IndexedDB)
 let localDB = null;
+
+// localStorage 同步备份 key (用于页面加载时立即读取, 避免 sql.js 加载延迟造成的视觉跳变)
+const SYNC_KEYS = ['ai-robot-theme', 'ai-robot-lang', 'ai-robot-mode'];
+
+/**
+ * 从 localStorage 同步读取保存的值
+ * 仅作为 sql.js 加载前的临时回退, DB 加载后会同步覆盖
+ */
+function syncGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 同时写入 localStorage 和 localDB, 确保:
+ * - localStorage 用于页面加载时的同步读取 (无延迟)
+ * - localDB 用于持久化存储
+ */
+function syncSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch { /* ignore */ }
+  if (localDB) {
+    localDB.set(key, value);
+  }
+}
 
 // ==================== 国际化 ====================
 
@@ -283,7 +328,7 @@ function applyTranslations(lang) {
  */
 function switchLanguage(lang) {
   // 获取当前语言
-  const currentLang = localDB.get('ai-robot-lang') || 'zh';
+  const currentLang = syncGet('ai-robot-lang') || 'zh';
 
   // 如果语言和当前已保存的相同，只关闭下拉框
   if (lang === currentLang) {
@@ -305,8 +350,8 @@ function switchLanguage(lang) {
     langText.textContent = lang === 'zh' ? '中文' : 'English';
   }
 
-  // 保存到本地数据库
-  localDB.set('ai-robot-lang', lang);
+  // 同步保存 (localStorage + localDB)
+  syncSet('ai-robot-lang', lang);
 
   // 等待动画完成后刷新页面
   setTimeout(() => {
@@ -318,7 +363,8 @@ function switchLanguage(lang) {
  * 初始化语言
  */
 function initLanguage() {
-  const savedLang = localDB.get('ai-robot-lang') || 'zh';
+  // 优先从 localStorage 同步读取 (无延迟)
+  const savedLang = syncGet('ai-robot-lang') || 'zh';
 
   // 设置语言按钮文本
   const langText = document.querySelector('.nav-language-text');
@@ -351,6 +397,36 @@ function toggleLanguageDropdown() {
 }
 
 /**
+ * 切换主题下拉菜单
+ */
+function toggleThemeDropdown() {
+  const themeEl = document.getElementById('navTheme');
+  if (themeEl) {
+    themeEl.classList.toggle('open');
+  }
+}
+
+/**
+ * 切换网站主题
+ */
+function switchTheme(theme) {
+  // 应用主题到 html 元素
+  document.documentElement.setAttribute('data-theme', theme);
+  // 更新桌面端下拉框激活状态
+  document.querySelectorAll('.nav-theme-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.theme === theme);
+  });
+  // 更新移动端按钮激活状态
+  document.querySelectorAll('.nav-mobile-theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
+  });
+  // 关闭下拉框
+  document.getElementById('navTheme')?.classList.remove('open');
+  // 同步保存 (localStorage + localDB)
+  syncSet('ai-robot-theme', theme);
+}
+
+/**
  * 切换移动端菜单
  */
 function toggleMobileMenu() {
@@ -363,9 +439,6 @@ function toggleMobileMenu() {
     toggle.classList.toggle('open');
   }
 }
-
-// 暴露到全局作用域（因为使用了 type="module"）
-window.toggleMobileMenu = toggleMobileMenu;
 
 // 点击页面其他地方关闭移动菜单
 document.addEventListener('click', function(e) {
@@ -454,8 +527,8 @@ function hideStatus() {
  * 初始化 API 配置
  */
 function initApiConfig() {
-  // 先检查用户选择的模式
-  const savedMode = localDB.get('ai-robot-mode');
+  // 优先从 localStorage 同步读取模式
+  const savedMode = syncGet('ai-robot-mode');
   if (savedMode === 'mock') {
     isMockMode = true;
     updateMockIndicator();
@@ -463,18 +536,20 @@ function initApiConfig() {
   }
 
   // 如果没有保存模式，检查是否有 API 配置
-  const savedConfig = localDB.get('ai-robot-config');
-  if (savedConfig) {
-    try {
-      apiConfig = savedConfig;
-      if (apiConfig.apiKey && apiConfig.apiEndpoint) {
-        isMockMode = false;
-        updateMockIndicator();
-        updateRobotConfig();
-        return;
+  if (localDB) {
+    const savedConfig = localDB.get('ai-robot-config');
+    if (savedConfig) {
+      try {
+        apiConfig = savedConfig;
+        if (apiConfig.apiKey && apiConfig.apiEndpoint) {
+          isMockMode = false;
+          updateMockIndicator();
+          updateRobotConfig();
+          return;
+        }
+      } catch (e) {
+        console.error('Failed to load saved config:', e);
       }
-    } catch (e) {
-      console.error('Failed to load saved config:', e);
     }
   }
   // 默认 Mock 模式
@@ -555,8 +630,8 @@ function selectMode(mode) {
  */
 function confirmMockMode() {
   isMockMode = true;
-  // 保存到本地数据库，覆盖之前的 API 配置选择
-  localDB.set('ai-robot-mode', 'mock');
+  // 同步保存 (localStorage + localDB)
+  syncSet('ai-robot-mode', 'mock');
   updateMockIndicator();
   updateRobotConfig();
   closeApiConfig();
@@ -605,9 +680,12 @@ function saveApiConfig(event) {
   }
 
   apiConfig = { apiKey, apiEndpoint };
-  localDB.set('ai-robot-config', apiConfig);
-  // 保存模式选择为 API
-  localDB.set('ai-robot-mode', 'api');
+  // 同步保存模式 (localStorage + localDB)
+  syncSet('ai-robot-mode', 'api');
+  // API 配置只存 localDB (不用于初始渲染)
+  if (localDB) {
+    localDB.set('ai-robot-config', apiConfig);
+  }
 
   isMockMode = false;
   updateMockIndicator();
@@ -787,23 +865,79 @@ function handlePageRefresh() {
   }
 }
 
+/**
+ * 初始化主题
+ */
+function initTheme() {
+  // 优先从 localStorage 同步读取 (无延迟), 等 DB 加载后会自动从 DB 加载
+  const savedTheme = syncGet('ai-robot-theme') || 'default';
+  // 应用主题
+  if (savedTheme !== 'default') {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+  // 更新桌面端下拉框激活状态
+  document.querySelectorAll('.nav-theme-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.theme === savedTheme);
+  });
+  // 更新移动端按钮激活状态
+  document.querySelectorAll('.nav-mobile-theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === savedTheme);
+  });
+  console.log('[Theme] Initialized theme:', savedTheme);
+}
+
+// ==================== 暴露全局函数 ====================
+
+// 必须在 top-level 执行，因为 HTML 使用 inline onclick 调用
+window.toggleSettings = toggleSettings;
+window.selectMode = selectMode;
+window.confirmMockMode = confirmMockMode;
+window.closeApiConfig = closeApiConfig;
+window.saveApiConfig = saveApiConfig;
+window.switchLanguage = switchLanguage;
+window.toggleLanguageDropdown = toggleLanguageDropdown;
+window.switchTheme = switchTheme;
+window.toggleThemeDropdown = toggleThemeDropdown;
+window.activateRobot = activateRobot;
+window.toggleMobileMenu = toggleMobileMenu;
+
 // ==================== 初始化 ====================
 
 /**
  * 初始化所有功能
  */
 async function init() {
-  // 初始化本地数据库
-  await initDB();
+  // 立即同步初始化主题和语言 (从 localStorage 读取, 无延迟)
+  initTheme();
+  initLanguage();
+
+  // 初始化 API 配置 (模式从 localStorage 同步读取)
+  initApiConfig();
 
   // 处理页面刷新
   handlePageRefresh();
 
-  // 初始化语言
-  initLanguage();
+  // 异步加载本地数据库
+  await initDB();
 
-  // 初始化 API 配置
-  initApiConfig();
+  // DB 加载完成后, 用 DB 中的值刷新 UI (如果 DB 有更新的数据则覆盖)
+  // 主题: 从 DB 读取, 如果与 localStorage 不同则更新 UI
+  const dbTheme = localDB.get('ai-robot-theme');
+  if (dbTheme && dbTheme !== syncGet('ai-robot-theme')) {
+    document.documentElement.setAttribute('data-theme', dbTheme);
+    document.querySelectorAll('.nav-theme-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.theme === dbTheme);
+    });
+    document.querySelectorAll('.nav-mobile-theme-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === dbTheme);
+    });
+  }
+
+  // 语言: 从 DB 读取, 如果与 localStorage 不同则刷新页面
+  const dbLang = localDB.get('ai-robot-lang');
+  if (dbLang && dbLang !== syncGet('ai-robot-lang')) {
+    applyTranslations(dbLang);
+  }
 
   // 设置机器人事件监听
   setupRobotEvents();
@@ -823,6 +957,11 @@ async function init() {
     if (langEl && !langEl.contains(e.target)) {
       langEl.classList.remove('open');
     }
+    // 点击外部关闭主题下拉菜单
+    const themeEl = document.getElementById('navTheme');
+    if (themeEl && !themeEl.contains(e.target)) {
+      themeEl.classList.remove('open');
+    }
   });
 
   // 点击遮罩关闭 API 配置弹窗
@@ -831,16 +970,6 @@ async function init() {
       closeApiConfig();
     }
   });
-
-  // 暴露全局函数供 HTML 调用
-  window.toggleSettings = toggleSettings;
-  window.selectMode = selectMode;
-  window.confirmMockMode = confirmMockMode;
-  window.closeApiConfig = closeApiConfig;
-  window.saveApiConfig = saveApiConfig;
-  window.switchLanguage = switchLanguage;
-  window.toggleLanguageDropdown = toggleLanguageDropdown;
-  window.activateRobot = activateRobot;
 }
 
 // 页面加载完成后初始化

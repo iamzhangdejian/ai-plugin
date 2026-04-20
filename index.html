@@ -171,6 +171,33 @@
           </svg>
           <span data-i18n="nav.settings">设置</span>
         </button>
+        <!-- 网站主题切换（仅桌面端显示） -->
+        <div class="nav-theme" id="navTheme">
+          <button class="nav-theme-btn" onclick="toggleThemeDropdown()" aria-label="Switch Theme">
+            <svg class="nav-theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            </svg>
+            <span class="nav-theme-text">主题</span>
+            <svg class="nav-language-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="nav-theme-dropdown">
+            <div class="nav-theme-item active" data-theme="default" onclick="switchTheme('default')">
+              <span class="nav-theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>
+              <span data-i18n="theme.default">默认</span>
+            </div>
+            <div class="nav-theme-item" data-theme="cool" onclick="switchTheme('cool')">
+              <span class="nav-theme-preview" style="background: linear-gradient(135deg, #0c1929, #38bdf8);"></span>
+              <span data-i18n="theme.cool">冷酷</span>
+            </div>
+            <div class="nav-theme-item" data-theme="cute" onclick="switchTheme('cute')">
+              <span class="nav-theme-preview" style="background: linear-gradient(135deg, #fce7f3, #fb923c);"></span>
+              <span data-i18n="theme.cute">可爱</span>
+            </div>
+          </div>
+        </div>
         <!-- 语言切换（仅桌面端显示） -->
         <div class="nav-language nav-language-desktop" id="navLanguage">
           <button class="nav-language-btn" onclick="toggleLanguageDropdown()" aria-label="Switch Language">
@@ -262,6 +289,23 @@
               <button class="nav-mobile-lang-btn" data-lang="en" onclick="switchLanguage('en'); toggleMobileMenu();">
                 <span class="nav-mobile-flag">🇺🇸</span>
                 <span>English</span>
+              </button>
+            </div>
+          </div>
+          <div class="nav-mobile-section">
+            <span class="nav-mobile-section-title">🎨 网站主题</span>
+            <div class="nav-mobile-theme-switch">
+              <button class="nav-mobile-theme-btn active" data-theme="default" onclick="switchTheme('default'); toggleMobileMenu();">
+                <span class="nav-mobile-theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>
+                <span>默认</span>
+              </button>
+              <button class="nav-mobile-theme-btn" data-theme="cool" onclick="switchTheme('cool'); toggleMobileMenu();">
+                <span class="nav-mobile-theme-preview" style="background: linear-gradient(135deg, #0c1929, #38bdf8);"></span>
+                <span>冷酷</span>
+              </button>
+              <button class="nav-mobile-theme-btn" data-theme="cute" onclick="switchTheme('cute'); toggleMobileMenu();">
+                <span class="nav-mobile-theme-preview" style="background: linear-gradient(135deg, #fce7f3, #fb923c);"></span>
+                <span>可爱</span>
               </button>
             </div>
           </div>
