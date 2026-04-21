@@ -43,6 +43,15 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   private isDisconnected = false; // 跟踪是否是断开连接
   private readonly STORAGE_KEY = 'ai-robot-position'; // 存储位置的 key
 
+  // 网站主题到机器人主题的映射
+  private readonly siteThemeMap: Record<string, RobotTheme> = {
+    'default': 'blue',
+    'cool': 'green',
+    'cute': 'purple',
+  };
+
+  private themeObserver: MutationObserver | null = null;
+
   static get observedAttributes(): string[] {
     return ['api-key', 'api-endpoint', 'wake-word', 'theme', 'position', 'visible'];
   }
@@ -87,6 +96,9 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.initComponents();
     this.bindEvents();
     this.initialized = true;
+
+    // 监听网站主题变化
+    this.initThemeObserver();
 
     this.dispatch('robot-ready');
     window.dispatchEvent(new CustomEvent('ai-robot-ready', { detail: { robot: this } }));
@@ -589,6 +601,42 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
     this.robot.setSkin(skin);
   }
 
+  /**
+   * 监听网站主题变化（data-theme on <html>）
+   */
+  private initThemeObserver(): void {
+    // 先应用当前主题
+    this.applySiteTheme();
+
+    this.themeObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          this.applySiteTheme();
+          break;
+        }
+      }
+    });
+
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+  }
+
+  /**
+   * 将网站主题映射为机器人主题并应用
+   */
+  private applySiteTheme(): void {
+    const siteTheme = document.documentElement.getAttribute('data-theme') || 'default';
+    const robotTheme = this.siteThemeMap[siteTheme] || 'blue';
+    if (this.robot) {
+      this.robot.setTheme(robotTheme);
+    }
+    if (this.chatPanel) {
+      this.chatPanel.setTheme(robotTheme);
+    }
+  }
+
   private dispatch(event: string, detail?: unknown): void {
     const callbacks = this.eventCallbacks.get(event);
     if (callbacks) {
@@ -670,6 +718,9 @@ export class AIRobotElement extends HTMLElement implements AIRobotAPI {
   }
 
   destroy(): void {
+    this.themeObserver?.disconnect();
+    this.themeObserver = null;
+
     this.isDisconnected = false;
     this.stopPositionUpdate();
     this.speechManager.destroy();

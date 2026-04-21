@@ -324,39 +324,22 @@ function applyTranslations(lang) {
 }
 
 /**
- * 切换语言
+ * 切换语言 (保留用于兼容)
  */
 function switchLanguage(lang) {
-  // 获取当前语言
   const currentLang = syncGet('ai-robot-lang') || 'zh';
+  if (lang === currentLang) return;
 
-  // 如果语言和当前已保存的相同，只关闭下拉框
-  if (lang === currentLang) {
-    document.getElementById('navLanguage')?.classList.remove('open');
-    return;
-  }
+  syncSet('ai-robot-lang', lang);
+  applyTranslations(lang);
 
-  // 更新激活状态
-  document.querySelectorAll('.nav-language-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.lang === lang);
-  });
-
-  // 关闭下拉框
-  document.getElementById('navLanguage')?.classList.remove('open');
-
-  // 更新语言按钮文本
+  // 更新语言按钮文本 (桌面端已移除)
   const langText = document.querySelector('.nav-language-text');
   if (langText) {
     langText.textContent = lang === 'zh' ? '中文' : 'English';
   }
 
-  // 同步保存 (localStorage + localDB)
-  syncSet('ai-robot-lang', lang);
-
-  // 等待动画完成后刷新页面
-  setTimeout(() => {
-    window.location.reload();
-  }, 250);
+  setTimeout(() => window.location.reload(), 250);
 }
 
 /**
@@ -384,26 +367,6 @@ function initLanguage() {
 
   // 应用翻译
   applyTranslations(savedLang);
-}
-
-/**
- * 切换语言下拉菜单
- */
-function toggleLanguageDropdown() {
-  const langEl = document.getElementById('navLanguage');
-  if (langEl) {
-    langEl.classList.toggle('open');
-  }
-}
-
-/**
- * 切换主题下拉菜单
- */
-function toggleThemeDropdown() {
-  const themeEl = document.getElementById('navTheme');
-  if (themeEl) {
-    themeEl.classList.toggle('open');
-  }
 }
 
 /**
@@ -569,133 +532,163 @@ function toggleSettings() {
  */
 function openSettings() {
   const overlay = document.getElementById('apiConfigOverlay');
-  const apiKeyInput = document.getElementById('apiKey');
-  const apiEndpointInput = document.getElementById('apiEndpoint');
   const modeOptions = document.querySelectorAll('.mode-option');
-  const apiForm = document.getElementById('apiConfigForm');
-  const mockConfirmActions = document.getElementById('mockConfirmActions');
-  const apiFormActions = document.querySelector('.api-form-actions');
 
   // 设置当前模式
   modeOptions.forEach(opt => {
     opt.classList.toggle('active', opt.dataset.mode === (isMockMode ? 'mock' : 'api'));
   });
 
-  // 根据模式显示/隐藏表单和按钮
+  // 根据模式显示/隐藏 API 表单
+  const apiForm = document.getElementById('apiConfigForm');
   if (isMockMode) {
     apiForm?.classList.remove('visible');
-    apiFormActions?.classList.add('hidden');
-    mockConfirmActions?.classList.remove('hidden');
   } else {
     apiForm?.classList.add('visible');
-    apiFormActions?.classList.remove('hidden');
-    mockConfirmActions?.classList.add('hidden');
+    const apiKeyInput = document.getElementById('apiKey');
+    const apiEndpointInput = document.getElementById('apiEndpoint');
     if (apiKeyInput) apiKeyInput.value = apiConfig.apiKey || '';
     if (apiEndpointInput) apiEndpointInput.value = apiConfig.apiEndpoint || '';
   }
 
+  // 初始化语言按钮
+  const currentLang = syncGet('ai-robot-lang') || 'zh';
+  document.querySelectorAll('.settings-lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+
+  // 初始化主题按钮
+  const currentTheme = syncGet('ai-robot-theme') || 'default';
+  document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === currentTheme);
+  });
+
+  hideStatus();
   overlay?.classList.add('visible');
 }
 
 /**
- * 选择模式
+ * 选择模式 (在设置弹窗内)
  */
 function selectMode(mode) {
   const modeOptions = document.querySelectorAll('.mode-option');
   const apiForm = document.getElementById('apiConfigForm');
-  const mockConfirmActions = document.getElementById('mockConfirmActions');
-  const apiFormActions = document.querySelector('.api-form-actions');
   const apiKeyInput = document.getElementById('apiKey');
 
   modeOptions.forEach(opt => {
     opt.classList.toggle('active', opt.dataset.mode === mode);
   });
 
-  if (mode === 'mock') {
-    apiForm?.classList.remove('visible');
-    apiFormActions?.classList.add('hidden');
-    mockConfirmActions?.classList.remove('hidden');
-  } else {
+  if (mode === 'api') {
     apiForm?.classList.add('visible');
-    apiFormActions?.classList.remove('hidden');
-    mockConfirmActions?.classList.add('hidden');
-    setTimeout(() => {
-      apiKeyInput?.focus();
-    }, 100);
+    setTimeout(() => apiKeyInput?.focus(), 100);
+  } else {
+    apiForm?.classList.remove('visible');
   }
 }
 
 /**
- * 确认 Mock 模式
+ * 选择语言 (在设置弹窗内)
  */
-function confirmMockMode() {
-  isMockMode = true;
-  // 同步保存 (localStorage + localDB)
-  syncSet('ai-robot-mode', 'mock');
-  updateMockIndicator();
-  updateRobotConfig();
-  closeApiConfig();
-  showStatus('已切换到 Mock 模式', 'success');
+function selectLanguage(lang) {
+  document.querySelectorAll('.settings-lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
 }
 
 /**
- * 关闭 API 配置弹窗
+ * 选择主题 (在设置弹窗内)
+ */
+function selectThemeInSettings(theme) {
+  document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
+  });
+}
+
+/**
+ * 保存所有设置
+ */
+function saveAllSettings() {
+  // 获取当前选中的模式
+  const activeMode = document.querySelector('.mode-option.active');
+  const mode = activeMode ? activeMode.dataset.mode : 'mock';
+
+  // 保存模式
+  syncSet('ai-robot-mode', mode);
+  if (mode === 'mock') {
+    isMockMode = true;
+    updateMockIndicator();
+    updateRobotConfig();
+  } else {
+    // API 模式 - 验证配置
+    const apiKeyInput = document.getElementById('apiKey');
+    const apiEndpointInput = document.getElementById('apiEndpoint');
+    const apiKey = apiKeyInput?.value?.trim() || '';
+    const apiEndpoint = apiEndpointInput?.value?.trim() || '';
+
+    if (!apiKey) {
+      showStatus('❌ 请输入 API Key', 'error');
+      apiKeyInput?.focus();
+      return;
+    }
+    if (!apiEndpoint) {
+      showStatus('❌ 请输入 API Endpoint', 'error');
+      apiEndpointInput?.focus();
+      return;
+    }
+    try {
+      new URL(apiEndpoint);
+    } catch (e) {
+      showStatus('❌ 请输入有效的 URL 地址', 'error');
+      apiEndpointInput?.focus();
+      return;
+    }
+
+    apiConfig = { apiKey, apiEndpoint };
+    syncSet('ai-robot-config', apiConfig);
+    if (localDB) {
+      localDB.set('ai-robot-config', apiConfig);
+    }
+    isMockMode = false;
+    updateMockIndicator();
+    updateRobotConfig();
+  }
+
+  // 保存语言
+  const activeLang = document.querySelector('.settings-lang-btn.active');
+  const lang = activeLang ? activeLang.dataset.lang : 'zh';
+  const prevLang = syncGet('ai-robot-lang') || 'zh';
+  syncSet('ai-robot-lang', lang);
+
+  // 如果语言变了，立即应用翻译
+  if (lang !== prevLang) {
+    applyTranslations(lang);
+  }
+
+  // 保存主题
+  const activeTheme = document.querySelector('.settings-theme-btn.active');
+  const theme = activeTheme ? activeTheme.dataset.theme : 'default';
+  if (theme !== 'default') {
+    document.documentElement.setAttribute('data-theme', theme);
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  syncSet('ai-robot-theme', theme);
+
+  showStatus('✅ 设置已保存', 'success');
+
+  setTimeout(() => {
+    closeApiConfig();
+  }, 1000);
+}
+
+/**
+ * 关闭设置弹窗
  */
 function closeApiConfig() {
   const overlay = document.getElementById('apiConfigOverlay');
   overlay?.classList.remove('visible');
   hideStatus();
-}
-
-/**
- * 保存 API 配置
- */
-function saveApiConfig(event) {
-  event.preventDefault();
-
-  const apiKeyInput = document.getElementById('apiKey');
-  const apiEndpointInput = document.getElementById('apiEndpoint');
-
-  const apiKey = apiKeyInput?.value?.trim() || '';
-  const apiEndpoint = apiEndpointInput?.value?.trim() || '';
-
-  if (!apiKey) {
-    showStatus('❌ 请输入 API Key', 'error');
-    apiKeyInput?.focus();
-    return;
-  }
-
-  if (!apiEndpoint) {
-    showStatus('❌ 请输入 API Endpoint', 'error');
-    apiEndpointInput?.focus();
-    return;
-  }
-
-  try {
-    new URL(apiEndpoint);
-  } catch (e) {
-    showStatus('❌ 请输入有效的 URL 地址', 'error');
-    apiEndpointInput?.focus();
-    return;
-  }
-
-  apiConfig = { apiKey, apiEndpoint };
-  // 同步保存模式 (localStorage + localDB)
-  syncSet('ai-robot-mode', 'api');
-  // API 配置只存 localDB (不用于初始渲染)
-  if (localDB) {
-    localDB.set('ai-robot-config', apiConfig);
-  }
-
-  isMockMode = false;
-  updateMockIndicator();
-  updateRobotConfig();
-
-  showStatus('✅ 配置已保存，已切换到 API 模式', 'success');
-
-  setTimeout(() => {
-    closeApiConfig();
-  }, 1500);
 }
 
 // ==================== 机器人交互 ====================
@@ -891,13 +884,11 @@ function initTheme() {
 // 必须在 top-level 执行，因为 HTML 使用 inline onclick 调用
 window.toggleSettings = toggleSettings;
 window.selectMode = selectMode;
-window.confirmMockMode = confirmMockMode;
+window.selectLanguage = selectLanguage;
+window.selectThemeInSettings = selectThemeInSettings;
+window.saveAllSettings = saveAllSettings;
 window.closeApiConfig = closeApiConfig;
-window.saveApiConfig = saveApiConfig;
-window.switchLanguage = switchLanguage;
-window.toggleLanguageDropdown = toggleLanguageDropdown;
 window.switchTheme = switchTheme;
-window.toggleThemeDropdown = toggleThemeDropdown;
 window.activateRobot = activateRobot;
 window.toggleMobileMenu = toggleMobileMenu;
 
@@ -951,20 +942,7 @@ async function init() {
     }
   });
 
-  // 点击外部关闭语言下拉菜单
-  document.addEventListener('click', (e) => {
-    const langEl = document.getElementById('navLanguage');
-    if (langEl && !langEl.contains(e.target)) {
-      langEl.classList.remove('open');
-    }
-    // 点击外部关闭主题下拉菜单
-    const themeEl = document.getElementById('navTheme');
-    if (themeEl && !themeEl.contains(e.target)) {
-      themeEl.classList.remove('open');
-    }
-  });
-
-  // 点击遮罩关闭 API 配置弹窗
+  // 点击遮罩关闭设置弹窗
   document.getElementById('apiConfigOverlay')?.addEventListener('click', (e) => {
     if (e.target === document.getElementById('apiConfigOverlay')) {
       closeApiConfig();
